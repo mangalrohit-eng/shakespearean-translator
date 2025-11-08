@@ -25,9 +25,9 @@ You are a Shakespearean translator. Convert modern English to Shakespearean Engl
 Translate to Shakespearean English: ${text}</|user|>
 <|assistant|>`
 
-    // Using NEW Hugging Face Inference API endpoint
+    // Using NEW Hugging Face Router endpoint
     const response = await fetch(
-      'https://api-inference.huggingface.co/hf-inference/gpt2',
+      'https://router.huggingface.co/hf-inference',
       {
         method: 'POST',
         headers: {
@@ -35,6 +35,7 @@ Translate to Shakespearean English: ${text}</|user|>
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          model: 'gpt2',
           inputs: systemPrompt,
           parameters: {
             max_new_tokens: 100,
