@@ -3,18 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { generateInsights } from '@/lib/analytics/insights'
-
-interface AnalyzedOpportunity {
-  oppId: string
-  clientName: string
-  oppName: string
-  clientGroup: string
-  dealSize: string
-  total: number
-  tags: string[]
-  rationale: string
-  confidence: number
-}
+import { AnalyzedOpportunity } from '@/lib/types'
 
 export default function ResultsPage() {
   const router = useRouter()
@@ -69,7 +58,7 @@ export default function ResultsPage() {
 
   const handleSave = (id: string) => {
     const updated = results.map(r => 
-      r.oppId === id ? { ...r, tags: editedTags } : r
+      r.id === id ? { ...r, tags: editedTags } : r
     )
     setResults(updated)
     sessionStorage.setItem('analysisResults', JSON.stringify(updated))
@@ -365,12 +354,12 @@ export default function ResultsPage() {
           </thead>
           <tbody>
             {results.map((result) => (
-              <tr key={result.oppId}>
+              <tr key={result.id}>
                 <td className="opp-name">{result.oppName}</td>
                 <td>{result.clientName}</td>
                 <td>{result.dealSize}</td>
                 <td>
-                  {editingId === result.oppId ? (
+                  {editingId === result.id ? (
                     <div className="tag-editor">
                       {['AI', 'Analytics', 'Data'].map(tag => (
                         <label key={tag} className="tag-checkbox">
@@ -410,11 +399,11 @@ export default function ResultsPage() {
                 </td>
                 <td className="rationale">{result.rationale}</td>
                 <td>
-                  {editingId === result.oppId ? (
+                  {editingId === result.id ? (
                     <div className="action-buttons">
                       <button 
                         className="save-btn"
-                        onClick={() => handleSave(result.oppId)}
+                        onClick={() => handleSave(result.id)}
                       >
                         ✓
                       </button>
@@ -428,7 +417,7 @@ export default function ResultsPage() {
                   ) : (
                     <button 
                       className="edit-btn"
-                      onClick={() => handleEdit(result.oppId, result.tags)}
+                      onClick={() => handleEdit(result.id, result.tags)}
                     >
                       ✏️ Edit
                     </button>
