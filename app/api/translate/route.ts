@@ -18,15 +18,16 @@ export async function POST(request: Request) {
       )
     }
 
-    const prompt = `Translate the following modern English text into Shakespearean English. Use archaic terms like thee, thou, thy, thine, hath, doth. Make it eloquent and poetic:
+    // Using a simple, reliable text generation model
+    const prompt = `Rewrite the following text in Shakespearean English style using words like thee, thou, thy, thine, hath, doth, art, methinks, and other archaic terms. Make it sound like Shakespeare wrote it.
 
-"${text}"
+Modern: ${text}
 
-Shakespearean translation:`
+Shakespearean:`
 
-    // Using Hugging Face Inference API directly with fetch
+    // Using Hugging Face Inference API with a free, reliable model
     const response = await fetch(
-      'https://api-inference.huggingface.co/models/google/flan-t5-large',
+      'https://api-inference.huggingface.co/models/gpt2',
       {
         method: 'POST',
         headers: {
@@ -36,13 +37,14 @@ Shakespearean translation:`
         body: JSON.stringify({
           inputs: prompt,
           parameters: {
-            max_length: 200,
-            temperature: 0.9,
+            max_new_tokens: 100,
+            temperature: 0.8,
+            top_p: 0.9,
             do_sample: true,
+            return_full_text: false,
           },
           options: {
             wait_for_model: true,
-            use_cache: false,
           }
         }),
       }
@@ -66,6 +68,8 @@ Shakespearean translation:`
       translated = data[0].generated_text.trim()
     } else if (data.generated_text) {
       translated = data.generated_text.trim()
+    } else if (Array.isArray(data) && data[0]) {
+      translated = typeof data[0] === 'string' ? data[0] : JSON.stringify(data[0])
     } else {
       console.error('Unexpected response format:', data)
       return NextResponse.json(
@@ -74,9 +78,15 @@ Shakespearean translation:`
       )
     }
 
-    // Clean up the response - remove any extra text after line breaks
+    // Clean up the response - take first sentence or line
     const lines = translated.split('\n')
     translated = lines[0].trim()
+    
+    // If it's too long, cut at first sentence
+    if (translated.length > 200) {
+      const sentences = translated.split(/[.!?]/)
+      translated = sentences[0] + '.'
+    }
 
     return NextResponse.json({ translated })
   } catch (error) {
