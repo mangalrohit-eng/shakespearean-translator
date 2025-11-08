@@ -29,7 +29,7 @@ Modern English: ${text}
 
 Shakespearean English:`
 
-    // Use Hugging Face text generation with GPT-2
+    // Use Hugging Face text generation with provider specified
     const result = await client.textGeneration({
       model: 'gpt2',
       inputs: prompt,
@@ -40,6 +40,7 @@ Shakespearean English:`
         do_sample: true,
         return_full_text: false,
       },
+      provider: 'hf-inference',
     })
 
     console.log('Hugging Face response:', result)
