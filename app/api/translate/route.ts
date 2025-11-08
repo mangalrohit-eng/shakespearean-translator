@@ -18,13 +18,15 @@ export async function POST(request: Request) {
       )
     }
 
-    const prompt = `<s>[INST] You are a translator that converts modern English into Shakespearean English. Use thee, thou, thy, thine, hath, doth, and other archaic Elizabethan terms. Transform the style completely into eloquent Shakespearean language while keeping the same meaning.
+    const prompt = `Translate the following modern English text into Shakespearean English. Use archaic terms like thee, thou, thy, thine, hath, doth. Make it eloquent and poetic:
 
-Translate this to Shakespearean English: ${text} [/INST]`
+"${text}"
+
+Shakespearean translation:`
 
     // Using Hugging Face Inference API directly with fetch
     const response = await fetch(
-      'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1',
+      'https://api-inference.huggingface.co/models/google/flan-t5-large',
       {
         method: 'POST',
         headers: {
@@ -34,13 +36,13 @@ Translate this to Shakespearean English: ${text} [/INST]`
         body: JSON.stringify({
           inputs: prompt,
           parameters: {
-            max_new_tokens: 250,
-            temperature: 0.7,
-            top_p: 0.95,
-            return_full_text: false,
+            max_length: 200,
+            temperature: 0.9,
+            do_sample: true,
           },
           options: {
             wait_for_model: true,
+            use_cache: false,
           }
         }),
       }
