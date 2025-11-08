@@ -5,7 +5,7 @@ A simple web application that transforms modern English into eloquent Shakespear
 ## Features
 
 - Clean, modern UI with gradient design
-- Real-time text translation using Hugging Face's Mistral-7B-Instruct model
+- Real-time text translation using OpenAI's GPT-3.5-Turbo
 - Responsive design that works on all devices
 - Keyboard shortcut (Ctrl+Enter) for quick translation
 - Ready for deployment on Vercel
@@ -15,7 +15,7 @@ A simple web application that transforms modern English into eloquent Shakespear
 ### Prerequisites
 
 - Node.js 18+ installed
-- A Hugging Face API key (get one at https://huggingface.co/settings/tokens)
+- An OpenAI API key (get one at https://platform.openai.com/api-keys)
 
 ### Installation
 
@@ -24,9 +24,9 @@ A simple web application that transforms modern English into eloquent Shakespear
 npm install
 ```
 
-2. Create a `.env` file in the root directory and add your Hugging Face API key:
+2. Create a `.env` file in the root directory and add your OpenAI API key:
 ```
-HUGGINGFACE_API_KEY=your_huggingface_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here
 ```
 
 3. Run the development server:
@@ -53,7 +53,7 @@ vercel
 3. Add your environment variable in Vercel dashboard:
    - Go to your project settings
    - Navigate to "Environment Variables"
-   - Add `HUGGINGFACE_API_KEY` with your API key
+   - Add `OPENAI_API_KEY` with your API key
 
 ### Method 2: Deploy via GitHub
 
@@ -64,8 +64,8 @@ vercel
 3. Click "Import Project" and select your repository
 
 4. Add environment variable:
-   - Name: `HUGGINGFACE_API_KEY`
-   - Value: Your Hugging Face API key
+   - Name: `OPENAI_API_KEY`
+   - Value: Your OpenAI API key
 
 5. Click "Deploy"
 
@@ -80,7 +80,7 @@ vercel
 
 - **Framework**: Next.js 14 (App Router)
 - **Language**: TypeScript
-- **AI API**: Hugging Face Inference API (Mistral-7B-Instruct)
+- **AI API**: OpenAI GPT-3.5-Turbo
 - **Styling**: Custom CSS
 - **Deployment**: Vercel
 

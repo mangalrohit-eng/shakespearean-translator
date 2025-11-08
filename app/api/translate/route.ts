@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { HfInference } from '@huggingface/inference'
+import OpenAI from 'openai'
 
 export async function POST(request: Request) {
   try {
@@ -12,52 +12,36 @@ export async function POST(request: Request) {
       )
     }
 
-    if (!process.env.HUGGINGFACE_API_KEY) {
+    if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
-        { error: 'Hugging Face API key is not configured. Please add HUGGINGFACE_API_KEY to your environment variables.' },
+        { error: 'OpenAI API key is not configured. Please add OPENAI_API_KEY to your environment variables.' },
         { status: 500 }
       )
     }
 
-    // Initialize Hugging Face Inference Client
-    const client = new HfInference(process.env.HUGGINGFACE_API_KEY)
-
-    // Create prompt for text generation
-    const prompt = `Translate the following modern English text into Shakespearean English. Use archaic words like thee, thou, thy, thine, hath, doth, art, and make it sound eloquent and poetic like Shakespeare wrote it.
-
-Modern English: ${text}
-
-Shakespearean English:`
-
-    // Use Hugging Face text generation with provider specified
-    const result = await client.textGeneration({
-      model: 'gpt2',
-      inputs: prompt,
-      parameters: {
-        max_new_tokens: 100,
-        temperature: 0.9,
-        top_p: 0.95,
-        do_sample: true,
-        return_full_text: false,
-      },
-      provider: 'hf-inference',
+    // Initialize OpenAI client
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
     })
 
-    console.log('Hugging Face response:', result)
+    // Use OpenAI to translate to Shakespearean English
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a translator that converts modern English into Shakespearean English. Use archaic terms like thee, thou, thy, thine, hath, doth, art, and methinks. Transform the text to sound eloquent and poetic as if Shakespeare wrote it. Only return the translated text, nothing else.'
+        },
+        {
+          role: 'user',
+          content: text
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 200,
+    })
 
-    let translated = result.generated_text.trim()
-    
-    // Clean up the response - take first meaningful line
-    const lines = translated.split('\n').filter(line => line.trim().length > 0)
-    translated = lines[0]?.trim() || translated
-    
-    // If it's too long, cut at first sentence
-    if (translated.length > 250) {
-      const sentenceEnd = translated.search(/[.!?]/)
-      if (sentenceEnd > 0) {
-        translated = translated.substring(0, sentenceEnd + 1)
-      }
-    }
+    const translated = completion.choices[0]?.message?.content || 'Translation failed'
 
     return NextResponse.json({ translated })
   } catch (error) {
