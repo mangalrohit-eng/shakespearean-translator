@@ -128,7 +128,7 @@ export class ParallelAnalyzer {
         // Check cache first
         const batchPromises = batch.map(async (opp) => {
           // Check cache
-          const cached = this.getCachedAnalysis(opp.oppId)
+          const cached = this.getCachedAnalysis(opp.id)
           if (cached) {
             return cached
           }
@@ -137,7 +137,7 @@ export class ParallelAnalyzer {
           const result = await analyzeOpportunity(opp, customInstructions)
           
           // Cache the result
-          this.setCachedAnalysis(opp.oppId, result)
+          this.setCachedAnalysis(opp.id, result)
           
           return result
         })
