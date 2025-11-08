@@ -1,13 +1,30 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+
+interface ProgressUpdate {
+  current: number
+  total: number
+  currentOpp: string
+  status: string
+}
+
+interface AgentUpdate {
+  agent: string
+  action: string
+  status: 'active' | 'complete'
+}
 
 export default function Home() {
+  const router = useRouter()
   const [file, setFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const [stats, setStats] = useState<{ total: number; filtered: number } | null>(null)
+  const [progress, setProgress] = useState<ProgressUpdate | null>(null)
+  const [agents, setAgents] = useState<AgentUpdate[]>([])
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
@@ -49,15 +66,20 @@ export default function Home() {
     setLoading(true)
     setError('')
     setSuccess('')
-    setStats(null)
+    setProgress(null)
+    setAgents([])
+
+    // Create abort controller for cancellation
+    abortControllerRef.current = new AbortController()
 
     try {
       const formData = new FormData()
       formData.append('file', file)
 
-      const response = await fetch('/api/analyze', {
+      const response = await fetch('/api/analyze-stream', {
         method: 'POST',
         body: formData,
+        signal: abortControllerRef.current.signal,
       })
 
       if (!response.ok) {
@@ -65,23 +87,76 @@ export default function Home() {
         throw new Error(data.error || 'Failed to analyze opportunities')
       }
 
-      // Download the file
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'tagged-opportunities.xlsx'
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+      const reader = response.body?.getReader()
+      const decoder = new TextDecoder()
 
-      setSuccess('Analysis complete! File downloaded successfully.')
+      if (!reader) {
+        throw new Error('No response stream available')
+      }
+
+      let results: any[] = []
+
+      while (true) {
+        const { done, value } = await reader.read()
+        
+        if (done) break
+
+        const chunk = decoder.decode(value)
+        const lines = chunk.split('\n').filter(line => line.trim())
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = JSON.parse(line.slice(6))
+            
+            if (data.type === 'progress') {
+              setProgress(data)
+            } else if (data.type === 'agent') {
+              setAgents(prev => {
+                const existing = prev.find(a => a.agent === data.agent)
+                if (existing) {
+                  return prev.map(a => 
+                    a.agent === data.agent 
+                      ? { agent: data.agent, action: data.action, status: data.status }
+                      : a
+                  )
+                }
+                return [...prev, { agent: data.agent, action: data.action, status: data.status }]
+              })
+            } else if (data.type === 'result') {
+              results.push(data.opportunity)
+            } else if (data.type === 'complete') {
+              // Store results in sessionStorage and navigate to results page
+              sessionStorage.setItem('analysisResults', JSON.stringify(results))
+              setSuccess('Analysis complete! Redirecting to results...')
+              setTimeout(() => router.push('/results'), 1000)
+              return
+            } else if (data.type === 'error') {
+              throw new Error(data.message)
+            }
+          }
+        }
+      }
+
       setFile(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      if (err instanceof Error && err.name === 'AbortError') {
+        setError('Analysis stopped by user')
+      } else {
+        setError(err instanceof Error ? err.message : 'An error occurred')
+      }
     } finally {
       setLoading(false)
+      setProgress(null)
+      abortControllerRef.current = null
+    }
+  }
+
+  const handleStop = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      setLoading(false)
+      setProgress(null)
+      setAgents([])
     }
   }
 
@@ -148,21 +223,77 @@ export default function Home() {
         </ul>
       </div>
 
-      <div className="button-container">
-        <button
-          className="analyze-btn"
-          onClick={handleAnalyze}
-          disabled={loading || !file}
-        >
-          {loading ? (
-            <span className="loading">
-              <span className="spinner"></span>
-              Analyzing Opportunities...
-            </span>
-          ) : (
-            '🚀 Analyze Opportunities'
+      {loading && (
+        <>
+          {/* Agent Pipeline Visualization */}
+          <div className="agent-pipeline">
+            <h3>🤖 Multi-Agent Pipeline</h3>
+            <div className="agents-container">
+              {agents.map((agent, index) => (
+                <div 
+                  key={agent.agent} 
+                  className={`agent-card ${agent.status}`}
+                >
+                  <div className="agent-header">
+                    <span className="agent-icon">
+                      {agent.status === 'active' ? '🔄' : '✅'}
+                    </span>
+                    <span className="agent-name">{agent.agent}</span>
+                  </div>
+                  <div className="agent-action">{agent.action}</div>
+                  {agent.status === 'active' && (
+                    <div className="agent-spinner"></div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Progress Bar */}
+          {progress && (
+            <div className="progress-container">
+              <div className="progress-header">
+                <span className="progress-title">📊 Overall Progress</span>
+                <span className="progress-count">
+                  {progress.current} / {progress.total} opportunities
+                </span>
+              </div>
+              <div className="progress-bar">
+                <div 
+                  className="progress-fill"
+                  style={{ width: `${(progress.current / progress.total) * 100}%` }}
+                />
+              </div>
+              <div className="progress-details">
+                <div className="current-opp">
+                  <strong>Current:</strong> {progress.currentOpp}
+                </div>
+                <div className="progress-status">
+                  <span className="status-badge">{progress.status}</span>
+                </div>
+              </div>
+            </div>
           )}
-        </button>
+        </>
+      )}
+
+      <div className="button-container">
+        {loading ? (
+          <button
+            className="stop-btn"
+            onClick={handleStop}
+          >
+            ⏹️ Stop Processing
+          </button>
+        ) : (
+          <button
+            className="analyze-btn"
+            onClick={handleAnalyze}
+            disabled={!file}
+          >
+            🚀 Analyze Opportunities
+          </button>
+        )}
       </div>
 
       <footer>
