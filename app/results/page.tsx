@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import { generateInsights } from '@/lib/analytics/insights'
 
 interface AnalyzedOpportunity {
-  id: string
+  oppId: string
   clientName: string
   oppName: string
   clientGroup: string
@@ -21,6 +22,7 @@ export default function ResultsPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editedTags, setEditedTags] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
+  const [showInsights, setShowInsights] = useState(true)
 
   useEffect(() => {
     // Load results from sessionStorage
@@ -31,6 +33,14 @@ export default function ResultsPage() {
       router.push('/')
     }
   }, [router])
+
+  // Generate insights
+  const insights = useMemo(() => {
+    if (results.length > 0) {
+      return generateInsights(results)
+    }
+    return null
+  }, [results])
 
   const stats = {
     total: results.length,
@@ -58,9 +68,11 @@ export default function ResultsPage() {
   }
 
   const handleSave = (id: string) => {
-    setResults(results.map(r => 
-      r.id === id ? { ...r, tags: editedTags } : r
-    ))
+    const updated = results.map(r => 
+      r.oppId === id ? { ...r, tags: editedTags } : r
+    )
+    setResults(updated)
+    sessionStorage.setItem('analysisResults', JSON.stringify(updated))
     setEditingId(null)
   }
 
@@ -72,7 +84,6 @@ export default function ResultsPage() {
   const handleDownload = async () => {
     setLoading(true)
     try {
-      // Send results to API for Excel generation
       const response = await fetch('/api/export', {
         method: 'POST',
         headers: {
@@ -89,15 +100,11 @@ export default function ResultsPage() {
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = 'tagged-opportunities.xlsx'
+      a.download = `tagged-opportunities-${new Date().toISOString().split('T')[0]}.xlsx`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
-
-      // Clear results and go back
-      sessionStorage.removeItem('analysisResults')
-      router.push('/')
     } catch (error) {
       console.error('Download error:', error)
       alert('Failed to download file. Please try again.')
@@ -126,6 +133,12 @@ export default function ResultsPage() {
             ← Back
           </button>
           <button 
+            className="toggle-insights-btn"
+            onClick={() => setShowInsights(!showInsights)}
+          >
+            {showInsights ? '📉 Hide Insights' : '📈 Show Insights'}
+          </button>
+          <button 
             className="download-btn" 
             onClick={handleDownload}
             disabled={loading}
@@ -135,7 +148,7 @@ export default function ResultsPage() {
         </div>
       </div>
 
-      {/* Statistics Dashboard */}
+      {/* Key Statistics */}
       <div className="stats-dashboard">
         <div className="stat-card">
           <div className="stat-icon">📋</div>
@@ -189,8 +202,155 @@ export default function ResultsPage() {
         </div>
       </div>
 
+      {/* Enhanced Insights */}
+      {showInsights && insights && (
+        <div className="insights-section">
+          <h2>📊 ENHANCED ANALYTICS</h2>
+          
+          <div className="insights-grid">
+            {/* Confidence Distribution */}
+            <div className="insight-card">
+              <h3>Confidence Distribution</h3>
+              <div className="chart-container">
+                <div className="bar-chart">
+                  <div className="bar-group">
+                    <div className="bar-label">High (80-100%)</div>
+                    <div className="bar-wrapper">
+                      <div 
+                        className="bar high"
+                        style={{ width: `${(insights.confidenceDistribution.high / stats.total) * 100}%` }}
+                      >
+                        <span className="bar-value">{insights.confidenceDistribution.high}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bar-group">
+                    <div className="bar-label">Medium (50-79%)</div>
+                    <div className="bar-wrapper">
+                      <div 
+                        className="bar medium"
+                        style={{ width: `${(insights.confidenceDistribution.medium / stats.total) * 100}%` }}
+                      >
+                        <span className="bar-value">{insights.confidenceDistribution.medium}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bar-group">
+                    <div className="bar-label">Low (0-49%)</div>
+                    <div className="bar-wrapper">
+                      <div 
+                        className="bar low"
+                        style={{ width: `${(insights.confidenceDistribution.low / stats.total) * 100}%` }}
+                      >
+                        <span className="bar-value">{insights.confidenceDistribution.low}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Tag Co-Occurrence */}
+            <div className="insight-card">
+              <h3>Tag Combinations</h3>
+              <div className="tag-occurrence-list">
+                {insights.tagCoOccurrence.slice(0, 5).map((item, idx) => (
+                  <div key={idx} className="occurrence-item">
+                    <div className="occurrence-label">{item.combination}</div>
+                    <div className="occurrence-bar-wrapper">
+                      <div 
+                        className="occurrence-bar"
+                        style={{ width: `${item.percentage}%` }}
+                      />
+                    </div>
+                    <div className="occurrence-value">{item.count} ({item.percentage}%)</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Top Keywords */}
+            <div className="insight-card">
+              <h3>Top Keywords in Opportunities</h3>
+              <div className="keyword-cloud">
+                {insights.topKeywords.map((kw, idx) => (
+                  <div 
+                    key={idx} 
+                    className="keyword-item"
+                    style={{ fontSize: `${0.9 + (kw.count / insights.topKeywords[0].count) * 0.6}rem` }}
+                  >
+                    {kw.keyword} <span className="keyword-count">({kw.count})</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Avg Confidence by Tag */}
+            <div className="insight-card">
+              <h3>Confidence by Category</h3>
+              <div className="confidence-by-tag">
+                {insights.averageConfidenceByTag.map((item, idx) => (
+                  <div key={idx} className="confidence-tag-item">
+                    <span className={`tag tag-${item.tag.toLowerCase()}`}>{item.tag}</span>
+                    <div className="confidence-bar-small">
+                      <div 
+                        className="confidence-fill-small"
+                        style={{ width: `${item.avgConfidence}%` }}
+                      />
+                    </div>
+                    <span className="confidence-value-small">{item.avgConfidence}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Client Breakdown */}
+          <div className="insight-card-full">
+            <h3>Top Clients by Opportunity Count</h3>
+            <div className="client-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Client</th>
+                    <th>Total</th>
+                    <th>AI</th>
+                    <th>Analytics</th>
+                    <th>Data</th>
+                    <th>Avg Confidence</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {insights.clientBreakdown.slice(0, 10).map((client, idx) => (
+                    <tr key={idx}>
+                      <td className="client-name">{client.clientName}</td>
+                      <td><strong>{client.total}</strong></td>
+                      <td>{client.aiCount > 0 ? <span className="mini-badge ai">{client.aiCount}</span> : '-'}</td>
+                      <td>{client.analyticsCount > 0 ? <span className="mini-badge analytics">{client.analyticsCount}</span> : '-'}</td>
+                      <td>{client.dataCount > 0 ? <span className="mini-badge data">{client.dataCount}</span> : '-'}</td>
+                      <td>
+                        <div className="mini-confidence">
+                          <div className="mini-confidence-bar">
+                            <div 
+                              className="mini-confidence-fill"
+                              style={{ width: `${client.avgConfidence}%` }}
+                            />
+                          </div>
+                          <span>{client.avgConfidence}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Results Table */}
       <div className="results-table-container">
+        <h2>ALL OPPORTUNITIES</h2>
         <table className="results-table">
           <thead>
             <tr>
@@ -205,12 +365,12 @@ export default function ResultsPage() {
           </thead>
           <tbody>
             {results.map((result) => (
-              <tr key={result.id}>
+              <tr key={result.oppId}>
                 <td className="opp-name">{result.oppName}</td>
                 <td>{result.clientName}</td>
                 <td>{result.dealSize}</td>
                 <td>
-                  {editingId === result.id ? (
+                  {editingId === result.oppId ? (
                     <div className="tag-editor">
                       {['AI', 'Analytics', 'Data'].map(tag => (
                         <label key={tag} className="tag-checkbox">
@@ -250,11 +410,11 @@ export default function ResultsPage() {
                 </td>
                 <td className="rationale">{result.rationale}</td>
                 <td>
-                  {editingId === result.id ? (
+                  {editingId === result.oppId ? (
                     <div className="action-buttons">
                       <button 
                         className="save-btn"
-                        onClick={() => handleSave(result.id)}
+                        onClick={() => handleSave(result.oppId)}
                       >
                         ✓
                       </button>
@@ -268,7 +428,7 @@ export default function ResultsPage() {
                   ) : (
                     <button 
                       className="edit-btn"
-                      onClick={() => handleEdit(result.id, result.tags)}
+                      onClick={() => handleEdit(result.oppId, result.tags)}
                     >
                       ✏️ Edit
                     </button>
@@ -282,4 +442,3 @@ export default function ResultsPage() {
     </div>
   )
 }
-

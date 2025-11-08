@@ -170,10 +170,21 @@ export default function Home() {
 
   return (
     <div className="container">
-      <h1>🎯 Data & AI Opportunities Analyzer</h1>
-      <p className="subtitle">
-        Upload your opportunities Excel file to identify AI, Analytics, and Data-related deals
-      </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+        <div style={{ flex: 1 }}>
+          <h1>🎯 Data & AI Opportunities Analyzer</h1>
+          <p className="subtitle">
+            Upload your opportunities Excel file to identify AI, Analytics, and Data-related deals
+          </p>
+        </div>
+        <button
+          className="back-btn"
+          onClick={() => router.push('/settings')}
+          style={{ marginTop: '8px' }}
+        >
+          ⚙ Configure Rules
+        </button>
+      </div>
 
       {error && <div className="error">{error}</div>}
       {success && <div className="success">{success}</div>}

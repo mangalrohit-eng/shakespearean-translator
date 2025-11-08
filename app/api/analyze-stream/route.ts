@@ -1,5 +1,6 @@
 import { parseExcelFile, filterCommsMedia } from '@/lib/excel/reader'
-import { analyzeOpportunity } from '@/lib/agents/analyzer'
+import { ParallelAnalyzer } from '@/lib/performance/parallel-analyzer'
+import type { CustomInstruction } from '@/lib/agents/analyzer'
 
 export const maxDuration = 300 // 5 minutes for Vercel
 
@@ -97,82 +98,56 @@ export async function POST(request: Request) {
 
         await new Promise(resolve => setTimeout(resolve, 300))
 
+        // Load custom instructions from request (if provided)
+        const customInstructions: CustomInstruction[] | undefined = undefined
+        // Note: Custom instructions would be passed from client in real scenario
+
+        // Agent 3-5: Analyzer Agent (with parallel processing)
         const total = filteredOpportunities.length
-        const results = []
+        const analyzer = new ParallelAnalyzer()
 
-        // Process each opportunity with progress updates
-        for (let i = 0; i < filteredOpportunities.length; i++) {
-          const opportunity = filteredOpportunities[i]
-
-          // Agent 3: Analyzer Agent
-          controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify({
-              type: 'agent',
-              agent: 'Analyzer Agent',
-              action: `Analyzing: "${opportunity.oppName}"`,
-              status: 'active'
-            })}\n\n`)
-          )
-
-          // Send progress update
+        // Progress callback
+        const onProgress = (current: number, total: number, currentOpp: string) => {
           controller.enqueue(
             encoder.encode(`data: ${JSON.stringify({
               type: 'progress',
-              current: i + 1,
+              current,
               total,
-              currentOpp: opportunity.oppName,
-              status: 'Analyzing keywords and context...'
+              currentOpp,
+              status: 'Analyzing with AI (parallel processing)...'
             })}\n\n`)
           )
+        }
 
-          // Agent 4: Tagger Agent
+        // Agent update callback
+        const onAgentUpdate = (agent: string, action: string, status: 'active' | 'complete') => {
           controller.enqueue(
             encoder.encode(`data: ${JSON.stringify({
               type: 'agent',
-              agent: 'Tagger Agent',
-              action: 'Assigning tags...',
-              status: 'active'
+              agent,
+              action,
+              status
             })}\n\n`)
           )
+        }
 
-          // Analyze opportunity
-          const analyzed = await analyzeOpportunity(opportunity)
-          results.push(analyzed)
+        // Run parallel analysis with performance optimizations
+        const results = await analyzer.analyzeOpportunities(
+          filteredOpportunities,
+          customInstructions,
+          onProgress,
+          onAgentUpdate
+        )
 
-          // Agent 5: Rationale Agent
-          controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify({
-              type: 'agent',
-              agent: 'Rationale Agent',
-              action: 'Generating explanation...',
-              status: 'active'
-            })}\n\n`)
-          )
-
-          await new Promise(resolve => setTimeout(resolve, 200))
-
-          controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify({
-              type: 'agent',
-              agent: 'Rationale Agent',
-              action: `Complete: ${analyzed.tags.join(', ') || 'None'}`,
-              status: 'complete'
-            })}\n\n`)
-          )
-
-          // Send result
+        // Send all results
+        results.forEach(analyzed => {
           controller.enqueue(
             encoder.encode(`data: ${JSON.stringify({
               type: 'result',
               opportunity: analyzed
             })}\n\n`)
           )
-
-          // Small delay to avoid rate limits
-          if (i < filteredOpportunities.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 100))
-          }
-        }
+        })
 
         // Send completion
         controller.enqueue(
