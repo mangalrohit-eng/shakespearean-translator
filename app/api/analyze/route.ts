@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     const outputBuffer = createExcelOutput(analyzedOpportunities)
 
     // Return the Excel file
-    return new NextResponse(outputBuffer, {
+    return new NextResponse(outputBuffer as unknown as BodyInit, {
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'Content-Disposition': 'attachment; filename="tagged-opportunities.xlsx"',
