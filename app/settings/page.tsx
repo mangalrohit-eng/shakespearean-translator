@@ -21,9 +21,20 @@ export default function SettingsPage() {
   useEffect(() => {
     // Load instructions from localStorage
     const stored = localStorage.getItem('analysisInstructions')
+    let loaded = false
+    
     if (stored) {
-      setInstructions(JSON.parse(stored))
-    } else {
+      try {
+        setInstructions(JSON.parse(stored))
+        loaded = true
+      } catch (error) {
+        console.error('Failed to parse stored instructions:', error)
+        // Clear corrupted data and use defaults
+        localStorage.removeItem('analysisInstructions')
+      }
+    }
+    
+    if (!loaded) {
       // Set default instructions
       const defaultInstructions: Instruction[] = [
         {

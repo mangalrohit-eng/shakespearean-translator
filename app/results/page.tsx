@@ -17,7 +17,13 @@ export default function ResultsPage() {
     // Load results from sessionStorage
     const storedResults = sessionStorage.getItem('analysisResults')
     if (storedResults) {
-      setResults(JSON.parse(storedResults))
+      try {
+        setResults(JSON.parse(storedResults))
+      } catch (error) {
+        console.error('Failed to parse stored results:', error)
+        sessionStorage.removeItem('analysisResults')
+        router.push('/')
+      }
     } else {
       router.push('/')
     }

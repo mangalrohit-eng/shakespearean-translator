@@ -95,18 +95,27 @@ export default function Home() {
       }
 
       let results: any[] = []
+      let buffer = '' // Buffer for incomplete chunks
 
       while (true) {
         const { done, value } = await reader.read()
         
         if (done) break
 
-        const chunk = decoder.decode(value)
-        const lines = chunk.split('\n').filter(line => line.trim())
+        const chunk = decoder.decode(value, { stream: true })
+        buffer += chunk
+        
+        const lines = buffer.split('\n')
+        // Keep the last potentially incomplete line in the buffer
+        buffer = lines.pop() || ''
 
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = JSON.parse(line.slice(6))
+          if (line.trim() && line.startsWith('data: ')) {
+            try {
+              const jsonStr = line.slice(6).trim()
+              if (!jsonStr) continue
+              
+              const data = JSON.parse(jsonStr)
             
             if (data.type === 'progress') {
               setProgress(data)
@@ -132,6 +141,10 @@ export default function Home() {
               return
             } else if (data.type === 'error') {
               throw new Error(data.message)
+            }
+            } catch (parseError) {
+              console.warn('Failed to parse JSON chunk:', line, parseError)
+              // Skip malformed chunks - they might be incomplete
             }
           }
         }
