@@ -164,7 +164,8 @@ export default function Home() {
     setFile(null)
     setError('')
     setSuccess('')
-    setStats(null)
+    setProgress(null)
+    setAgents([])
   }
 
   return (
