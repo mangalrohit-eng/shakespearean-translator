@@ -19,7 +19,7 @@ body {
 }
 
 .container {
-  max-width: 800px;
+  max-width: 900px;
   width: 100%;
   background: white;
   border-radius: 20px;
@@ -42,57 +42,137 @@ h1 {
   font-size: 1.1rem;
 }
 
-.input-section,
-.output-section {
+.upload-area {
+  border: 3px dashed #667eea;
+  border-radius: 15px;
+  padding: 60px 20px;
+  text-align: center;
+  background-color: #f8f9fa;
+  transition: all 0.3s ease;
+  cursor: pointer;
   margin-bottom: 30px;
 }
 
-label {
-  display: block;
+.upload-area:hover {
+  border-color: #764ba2;
+  background-color: #f0f0ff;
+}
+
+.upload-area.has-file {
+  border-style: solid;
+  padding: 30px;
+  background-color: #e8f5e9;
+  border-color: #4caf50;
+}
+
+.upload-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+}
+
+.upload-text {
+  font-size: 1.3rem;
+  color: #333;
+  font-weight: 600;
   margin-bottom: 10px;
+}
+
+.upload-subtext {
+  color: #666;
+  margin: 15px 0;
+}
+
+.file-label {
+  display: inline-block;
+  padding: 12px 30px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.2s ease;
+}
+
+.file-label:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.file-hint {
+  margin-top: 15px;
+  color: #999;
+  font-size: 0.9rem;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  justify-content: space-between;
+}
+
+.file-icon {
+  font-size: 3rem;
+}
+
+.file-details {
+  flex: 1;
+  text-align: left;
+}
+
+.file-name {
+  font-size: 1.2rem;
   font-weight: 600;
   color: #333;
-  font-size: 1.1rem;
+  margin-bottom: 5px;
 }
 
-textarea {
-  width: 100%;
-  padding: 15px;
-  border: 2px solid #e0e0e0;
-  border-radius: 10px;
-  font-size: 1rem;
-  font-family: inherit;
-  resize: vertical;
-  min-height: 120px;
-  transition: border-color 0.3s ease;
+.file-size {
+  color: #666;
+  font-size: 0.9rem;
 }
 
-textarea:focus {
-  outline: none;
-  border-color: #667eea;
+.remove-btn {
+  background: #ff5252;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-textarea:disabled {
-  background-color: #f5f5f5;
-  cursor: not-allowed;
+.remove-btn:hover {
+  background: #ff1744;
+  transform: scale(1.1);
 }
 
-.output-box {
-  background-color: #f8f9fa;
-  border: 2px solid #e0e0e0;
-  border-radius: 10px;
-  padding: 15px;
-  min-height: 120px;
+.info-box {
+  background-color: #e3f2fd;
+  border-left: 4px solid #2196f3;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+.info-box h3 {
+  color: #1976d2;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+}
+
+.info-box ul {
+  list-style: none;
+  padding: 0;
+}
+
+.info-box li {
+  padding: 8px 0;
+  color: #333;
   font-size: 1rem;
   line-height: 1.6;
-  color: #333;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-
-.output-box.empty {
-  color: #999;
-  font-style: italic;
 }
 
 .button-container {
@@ -103,7 +183,7 @@ textarea:disabled {
 
 button {
   flex: 1;
-  padding: 15px 30px;
+  padding: 18px 30px;
   font-size: 1.1rem;
   font-weight: 600;
   border: none;
@@ -112,30 +192,20 @@ button {
   transition: all 0.3s ease;
 }
 
-.translate-btn {
+.analyze-btn {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
 }
 
-.translate-btn:hover:not(:disabled) {
+.analyze-btn:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
 }
 
-.translate-btn:disabled {
+.analyze-btn:disabled {
   background: #ccc;
   cursor: not-allowed;
   transform: none;
-}
-
-.clear-btn {
-  background: #f0f0f0;
-  color: #333;
-}
-
-.clear-btn:hover {
-  background: #e0e0e0;
-  transform: translateY(-2px);
 }
 
 .loading {
@@ -169,6 +239,16 @@ button {
   border: 1px solid #fcc;
 }
 
+.success {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #a5d6a7;
+  font-weight: 600;
+}
+
 footer {
   text-align: center;
   margin-top: 30px;
@@ -191,8 +271,16 @@ footer {
     font-size: 1rem;
   }
 
-  .button-container {
+  .upload-area {
+    padding: 40px 15px;
+  }
+
+  .upload-icon {
+    font-size: 3rem;
+  }
+
+  .file-info {
     flex-direction: column;
+    text-align: center;
   }
 }
-
