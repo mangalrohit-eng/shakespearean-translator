@@ -11,44 +11,84 @@ export async function POST(request: Request) {
       )
     }
 
-    // Create a simple rule-based Shakespearean translator (no API needed!)
-    const shakespeareanTranslate = (input: string): string => {
-      const replacements: { [key: string]: string } = {
-        'you are': 'thou art',
-        "you're": 'thou art',
-        'you': 'thee',
-        'your': 'thy',
-        'yours': 'thine',
-        'yes': 'aye',
-        'no': 'nay',
-        'hello': 'hail',
-        'how are you': 'how dost thou fare',
-        'what': 'what',
-        'where': 'whither',
-        'when': 'when',
-        'why': 'wherefore',
-        'do': 'doth',
-        'does': 'doth',
-        'have': 'hath',
-        'has': 'hath',
-        'think': 'methinks',
-        'before': 'ere',
-        'nothing': 'naught',
-      };
-      
-      let result = input.toLowerCase();
-      for (const [modern, archaic] of Object.entries(replacements)) {
-        const regex = new RegExp(`\\b${modern}\\b`, 'gi');
-        result = result.replace(regex, archaic);
-      }
-      
-      // Capitalize first letter
-      return result.charAt(0).toUpperCase() + result.slice(1);
-    };
+    if (!process.env.HUGGINGFACE_API_KEY) {
+      return NextResponse.json(
+        { error: 'Hugging Face API key is not configured. Please add HUGGINGFACE_API_KEY to your environment variables.' },
+        { status: 500 }
+      )
+    }
 
-    // Use simple rule-based translation (100% reliable and free)
-    const translated = shakespeareanTranslate(text);
+    // Create prompt for text generation
+    const prompt = `Translate the following modern English text into Shakespearean English. Use archaic words like thee, thou, thy, thine, hath, doth, art, and make it sound eloquent and poetic like Shakespeare wrote it.
+
+Modern English: ${text}
+
+Shakespearean English:`
+
+    // Using Hugging Face Inference API with GPT-2
+    const response = await fetch(
+      'https://api-inference.huggingface.co/models/gpt2',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          inputs: prompt,
+          parameters: {
+            max_new_tokens: 100,
+            temperature: 0.9,
+            top_p: 0.95,
+            do_sample: true,
+            return_full_text: false,
+          },
+          options: {
+            wait_for_model: true,
+            use_cache: false,
+          }
+        }),
+      }
+    )
+
+    if (!response.ok) {
+      const errorData = await response.text()
+      console.error('Hugging Face API error:', response.status, errorData)
+      return NextResponse.json(
+        { error: `API Error: ${response.status}. ${errorData}` },
+        { status: 500 }
+      )
+    }
+
+    const data = await response.json()
+    console.log('Hugging Face response:', data)
+
+    let translated = ''
     
+    if (Array.isArray(data) && data[0]?.generated_text) {
+      translated = data[0].generated_text.trim()
+    } else if (data.generated_text) {
+      translated = data.generated_text.trim()
+    } else {
+      console.error('Unexpected response format:', data)
+      return NextResponse.json(
+        { error: 'Unexpected response from AI model' },
+        { status: 500 }
+      )
+    }
+
+    // Clean up the response - take first meaningful line
+    const lines = translated.split('\n').filter(line => line.trim().length > 0)
+    translated = lines[0]?.trim() || translated
+    
+    // If it's too long, cut at first sentence
+    if (translated.length > 250) {
+      const sentenceEnd = translated.search(/[.!?]/)
+      if (sentenceEnd > 0) {
+        translated = translated.substring(0, sentenceEnd + 1)
+      }
+    }
+
     return NextResponse.json({ translated })
   } catch (error) {
     console.error('Translation error:', error)
