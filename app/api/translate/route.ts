@@ -25,9 +25,9 @@ You are a Shakespearean translator. Convert modern English to Shakespearean Engl
 Translate to Shakespearean English: ${text}</|user|>
 <|assistant|>`
 
-    // Using Hugging Face Serverless Inference API with Zephyr model
+    // Using NEW Hugging Face Inference API endpoint
     const response = await fetch(
-      'https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta',
+      'https://api-inference.huggingface.co/hf-inference/gpt2',
       {
         method: 'POST',
         headers: {
@@ -37,15 +37,12 @@ Translate to Shakespearean English: ${text}</|user|>
         body: JSON.stringify({
           inputs: systemPrompt,
           parameters: {
-            max_new_tokens: 150,
-            temperature: 0.7,
-            top_p: 0.95,
-            do_sample: true,
+            max_new_tokens: 100,
+            temperature: 0.8,
             return_full_text: false,
           },
           options: {
             wait_for_model: true,
-            use_cache: false,
           }
         }),
       }
