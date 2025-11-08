@@ -18,16 +18,16 @@ export async function POST(request: Request) {
       )
     }
 
-    // Using a simple, reliable text generation model
-    const prompt = `Rewrite the following text in Shakespearean English style using words like thee, thou, thy, thine, hath, doth, art, methinks, and other archaic terms. Make it sound like Shakespeare wrote it.
+    // Format for instruction-following model
+    const systemPrompt = `<|system|>
+You are a Shakespearean translator. Convert modern English to Shakespearean English using archaic terms like thee, thou, thy, thine, hath, doth, art, and methinks.</|system|>
+<|user|>
+Translate to Shakespearean English: ${text}</|user|>
+<|assistant|>`
 
-Modern: ${text}
-
-Shakespearean:`
-
-    // Using Hugging Face Inference API with a free, reliable model
+    // Using Hugging Face Serverless Inference API with Zephyr model
     const response = await fetch(
-      'https://api-inference.huggingface.co/models/gpt2',
+      'https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta',
       {
         method: 'POST',
         headers: {
@@ -35,16 +35,17 @@ Shakespearean:`
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          inputs: prompt,
+          inputs: systemPrompt,
           parameters: {
-            max_new_tokens: 100,
-            temperature: 0.8,
-            top_p: 0.9,
+            max_new_tokens: 150,
+            temperature: 0.7,
+            top_p: 0.95,
             do_sample: true,
             return_full_text: false,
           },
           options: {
             wait_for_model: true,
+            use_cache: false,
           }
         }),
       }
