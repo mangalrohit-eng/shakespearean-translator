@@ -121,11 +121,12 @@ export async function POST(request: Request) {
           }
         })
 
-        // Send completion message
+        // Send completion message with captain emails
         controller.enqueue(
           encoder.encode(`data: ${JSON.stringify({
             type: 'complete',
-            total: finalState.analyzedOpportunities.length
+            total: finalState.analyzedOpportunities.length,
+            captainEmails: finalState.captainEmails || []
           })}\n\n`)
         )
 

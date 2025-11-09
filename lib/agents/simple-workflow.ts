@@ -3,6 +3,7 @@ import { orchestratorAgent } from './orchestrator-agent'
 import { excelReaderAgent } from './excel-reader-agent'
 import { filterAgent } from './filter-agent'
 import { analyzerAgent } from './analyzer-agent'
+import { emailComposerAgent } from './email-composer-agent'
 
 /**
  * LangGraph-style multi-agent workflow with intelligent Orchestrator
@@ -59,7 +60,30 @@ export async function executeSimpleWorkflow(
     state = { ...state, ...analyzerResult }
     if (onUpdate) onUpdate(state)
 
-    // Step 7: Orchestrator reviews final results
+    // Step 7: Email Composer Agent - Generate personalized emails for D&AI captains
+    const emailResult = await emailComposerAgent(state, (log) => {
+      // Pass through agent logs for real-time updates
+      if (onUpdate) {
+        const updatedState = {
+          ...state,
+          agentLogs: [
+            ...(state.agentLogs || []),
+            {
+              agent: log.agent,
+              action: log.action,
+              status: log.status,
+              timestamp: new Date().toISOString(),
+              details: log.details
+            }
+          ]
+        }
+        onUpdate(updatedState)
+      }
+    })
+    state = { ...state, ...emailResult }
+    if (onUpdate) onUpdate(state)
+
+    // Step 8: Orchestrator reviews final results
     const afterAnalyzerResult = await orchestratorAgent(state, 'after_analyzer')
     state = { ...state, ...afterAnalyzerResult }
     if (onUpdate) onUpdate(state)
