@@ -323,22 +323,19 @@ export default function Home() {
         )}
 
         {/* Accenture Header */}
-        <header className="app-header">
-          <div className="header-content">
-            <div className="header-left">
-              <div className="accenture-logo">
-                <div className="accent-symbol">{'>'}</div>
-                <div className="company-name">Accenture</div>
-              </div>
-              <div className="header-divider"></div>
-              <div className="app-title">Opportunity Intelligence Platform</div>
+        <header className="accenture-header">
+          <div className="accenture-header-container">
+            <div className="accenture-brand">
+              <svg className="accenture-logo-svg" viewBox="0 0 120 40" fill="none">
+                <text x="0" y="28" fill="currentColor" fontSize="24" fontWeight="300" letterSpacing="-0.5">accenture</text>
+                <path d="M115 8 L120 12 L115 16" stroke="#A100FF" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </div>
-            <nav className="header-nav">
-              <button 
-                className={`nav-item ${!showResults ? 'active' : ''}`}
+            <nav className="accenture-nav">
+              <a 
+                className={`accenture-nav-link ${!showResults ? 'active' : ''}`}
                 onClick={() => {
                   if (showResults) {
-                    // Clear results and go back to upload view
                     setShowResults(false)
                     setResults([])
                     setFile(null)
@@ -348,46 +345,52 @@ export default function Home() {
                     setAgents([])
                     setAgentLogs([])
                   }
-                  // Scroll to top
                   window.scrollTo({ top: 0, behavior: 'smooth' })
                 }}
               >
-                <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
                 Analyze
-              </button>
-              <button className="nav-item" onClick={() => router.push('/architecture')}>
-                <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 13a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1v-6z" strokeWidth="2"/>
-                </svg>
+              </a>
+              <a className="accenture-nav-link" onClick={() => router.push('/architecture')}>
                 Architecture
-              </button>
-              <button className="nav-item" onClick={() => router.push('/settings')}>
-                <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" strokeWidth="2"/>
-                  <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" strokeWidth="2"/>
-                </svg>
+              </a>
+              <a className="accenture-nav-link" onClick={() => router.push('/settings')}>
                 Settings
-              </button>
+              </a>
               {showResults && (
-                <button className={`nav-item ${showAnalyticsModal ? 'active' : ''}`} onClick={() => setShowAnalyticsModal(true)}>
-                  <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
+                <a className={`accenture-nav-link ${showAnalyticsModal ? 'active' : ''}`} onClick={() => setShowAnalyticsModal(true)}>
                   Analytics
-                </button>
+                </a>
               )}
             </nav>
+            <button 
+              className="activity-toggle-btn"
+              onClick={() => setShowSidebar(!showSidebar)}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
+                <rect x="3" y="3" width="7" height="7" strokeWidth="2" rx="1"/>
+                <rect x="14" y="3" width="7" height="7" strokeWidth="2" rx="1"/>
+                <rect x="14" y="14" width="7" height="7" strokeWidth="2" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" strokeWidth="2" rx="1"/>
+              </svg>
+              <span>Activity</span>
+            </button>
           </div>
         </header>
 
         <div className="container">
+          
+          {!showResults && (
+            <div className="page-hero">
+              <h1>Data & AI Opportunity Intelligence</h1>
+              <p className="hero-subtitle">Analyze business opportunities using advanced AI to identify Data, AI, and Analytics potential</p>
+            </div>
+          )}
 
       {error && <div className="error">{error}</div>}
       {success && <div className="success">{success}</div>}
 
       {/* Upload and Analyze Section */}
+      {!showResults && (
       <div className="upload-analyze-section">
         <div
           className={`upload-area-compact ${file ? 'has-file' : ''}`}
@@ -464,6 +467,7 @@ export default function Home() {
       <div className="info-box-compact">
         <strong>How it works:</strong> Filters US-Comms & Media opportunities • AI-powered tagging • Exports results
       </div>
+      )}
 
       {loading && (
         <>
