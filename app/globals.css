@@ -158,12 +158,12 @@ body {
   display: flex;
   flex-direction: column;
   position: fixed;
-  left: 0;
+  right: 0;
   top: 64px;
   bottom: 0;
   z-index: 50;
-  box-shadow: 2px 0 16px rgba(0, 0, 0, 0.15);
-  border-right: 1px solid #2A2A2A;
+  box-shadow: -2px 0 16px rgba(0, 0, 0, 0.15);
+  border-left: 1px solid #2A2A2A;
   overflow: hidden;
 }
 
@@ -356,11 +356,11 @@ body {
 
 .main-content {
   flex: 1;
-  transition: margin-left 0.3s;
+  transition: margin-right 0.3s;
 }
 
 .main-content.with-sidebar {
-  margin-left: 380px;
+  margin-right: 380px;
 }
 
 .sidebar-toggle-btn {

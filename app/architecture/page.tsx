@@ -41,15 +41,8 @@ export default function ArchitecturePage() {
         </div>
       </header>
 
-      <div className="container">
-        <div className="page-hero">
-          <h1>LangGraph Multi-Agent Architecture</h1>
-          <p className="hero-subtitle">Real-time AI workflow with agent communication</p>
-        </div>
-      </div>
-
       {/* Main Architecture - Above the Fold */}
-      <div className="architecture-flow">
+      <div className="architecture-flow" style={{marginTop: '80px'}}>
         
         {/* START Node */}
         <div className="agent-node-compact start">
@@ -78,7 +71,7 @@ export default function ArchitecturePage() {
           </svg>
           {flowStep >= 1 && (
             <div className="data-packet" style={{animation: 'flowPacket 2s ease-in-out'}}>
-              📄 File
+              File
             </div>
           )}
         </div>
@@ -230,22 +223,18 @@ export default function ArchitecturePage() {
       {/* Quick Stats Below */}
       <div className="quick-stats">
         <div className="stat-card">
-          <div className="stat-icon">🔧</div>
           <h3>Framework</h3>
           <p>LangGraph 1.0 + LangChain Core</p>
         </div>
         <div className="stat-card">
-          <div className="stat-icon">🤖</div>
           <h3>AI Model</h3>
           <p>OpenAI GPT-4o-mini</p>
         </div>
         <div className="stat-card">
-          <div className="stat-icon">💬</div>
           <h3>Communication</h3>
           <p>BaseMessage[] (HumanMessage, AIMessage)</p>
         </div>
         <div className="stat-card">
-          <div className="stat-icon">⚡</div>
           <h3>Processing</h3>
           <p>Sequential with conditional routing</p>
         </div>
@@ -253,7 +242,7 @@ export default function ArchitecturePage() {
 
       {/* Technical Details - Expandable */}
       <details className="tech-details-expandable">
-        <summary>📋 View Technical Details</summary>
+        <summary>View Technical Details</summary>
         <div className="tech-content">
           <div className="tech-section">
             <h3>Real Agent Architecture</h3>

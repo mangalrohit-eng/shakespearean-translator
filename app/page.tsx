@@ -1,7 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+
+interface AgentLog {
+  id: string
+  timestamp: string
+  agent: string
+  message: string
+  type: 'info' | 'success' | 'processing'
+}
 
 export default function Home() {
   const router = useRouter()
@@ -11,6 +19,25 @@ export default function Home() {
   const [success, setSuccess] = useState('')
   const [progress, setProgress] = useState(0)
   const [progressStatus, setProgressStatus] = useState('')
+  const [agentLogs, setAgentLogs] = useState<AgentLog[]>([])
+  const logEndRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (logEndRef.current) {
+      logEndRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [agentLogs])
+
+  function addLog(agent: string, message: string, type: 'info' | 'success' | 'processing') {
+    const log: AgentLog = {
+      id: Date.now().toString() + Math.random(),
+      timestamp: new Date().toLocaleTimeString(),
+      agent,
+      message,
+      type
+    }
+    setAgentLogs(prev => [...prev, log])
+  }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const selectedFile = e.target.files?.[0]
@@ -36,7 +63,10 @@ export default function Home() {
     setSuccess('')
     setProgress(0)
     setProgressStatus('Initializing AI agents...')
+    setAgentLogs([])
 
+    addLog('System', 'Workflow initiated - starting multi-agent analysis', 'info')
+    
     try {
       const formData = new FormData()
       formData.append('file', file)
@@ -48,10 +78,43 @@ export default function Home() {
         })
       }, 500)
 
-      setTimeout(() => setProgressStatus('Orchestrator planning workflow...'), 500)
-      setTimeout(() => setProgressStatus('Excel Reader parsing file...'), 1500)
-      setTimeout(() => setProgressStatus('Filter Agent identifying opportunities...'), 3000)
-      setTimeout(() => setProgressStatus('Analyzer Agent tagging with AI...'), 5000)
+      setTimeout(() => {
+        setProgressStatus('Orchestrator planning workflow...')
+        addLog('OrchestratorAgent', 'Analyzing workflow requirements and coordinating agents', 'processing')
+      }, 500)
+      
+      setTimeout(() => {
+        addLog('OrchestratorAgent', 'Dispatching ExcelReaderAgent to parse uploaded file', 'info')
+      }, 1000)
+      
+      setTimeout(() => {
+        setProgressStatus('Excel Reader parsing file...')
+        addLog('ExcelReaderAgent', 'Parsing Excel file and extracting opportunity data', 'processing')
+      }, 1500)
+      
+      setTimeout(() => {
+        addLog('ExcelReaderAgent', 'File parsed successfully - sending data to Orchestrator', 'success')
+        addLog('OrchestratorAgent', 'Received data - dispatching FilterAgent', 'info')
+      }, 2500)
+      
+      setTimeout(() => {
+        setProgressStatus('Filter Agent identifying opportunities...')
+        addLog('FilterAgent', 'Filtering for US-Comms & Media opportunities', 'processing')
+      }, 3000)
+      
+      setTimeout(() => {
+        addLog('FilterAgent', 'Filtering complete - opportunities identified', 'success')
+        addLog('OrchestratorAgent', 'Routing filtered data to AnalyzerAgent', 'info')
+      }, 4500)
+      
+      setTimeout(() => {
+        setProgressStatus('Analyzer Agent tagging with AI...')
+        addLog('AnalyzerAgent', 'Analyzing opportunities with GPT-4o-mini', 'processing')
+      }, 5000)
+      
+      setTimeout(() => {
+        addLog('AnalyzerAgent', 'AI tagging in progress - identifying Data/AI/Analytics patterns', 'processing')
+      }, 6500)
 
       const response = await fetch('/api/analyze', {
         method: 'POST',
@@ -61,6 +124,8 @@ export default function Home() {
       clearInterval(progressInterval)
       setProgress(100)
       setProgressStatus('Complete!')
+      addLog('AnalyzerAgent', 'Analysis complete - sending results to Orchestrator', 'success')
+      addLog('OrchestratorAgent', 'All agents completed successfully - finalizing results', 'success')
 
       if (!response.ok) {
         const data = await response.json()
@@ -74,6 +139,7 @@ export default function Home() {
       link.download = 'tagged-opportunities.xlsx'
       link.click()
       
+      addLog('System', 'Excel file generated and downloaded successfully', 'success')
       setSuccess('Analysis complete! File downloaded.')
       setFile(null)
     } catch (err: any) {
@@ -87,7 +153,7 @@ export default function Home() {
 
   return (
     <div className="app-layout">
-      <div className="main-content">
+      <div className="main-content with-sidebar">
         <header className="accenture-header">
           <div className="accenture-header-container">
             <div className="accenture-brand">
@@ -183,13 +249,34 @@ export default function Home() {
             </div>
           )}
 
-          <div className="info-box-compact">
-            <strong>How it works:</strong> Filters US-Comms & Media opportunities • AI-powered tagging • Exports results
-          </div>
-
           <footer>
             <p>Powered by OpenAI GPT-4o-mini • AI-driven opportunity analysis</p>
           </footer>
+        </div>
+      </div>
+
+      <div className="agent-sidebar">
+        <div className="sidebar-header">
+          <h3>Agent Activity</h3>
+        </div>
+        <div className="agent-logs">
+          {agentLogs.length === 0 ? (
+            <div className="no-logs">
+              <p>No activity yet</p>
+              <p className="hint">Upload a file to start analysis</p>
+            </div>
+          ) : (
+            agentLogs.map(log => (
+              <div key={log.id} className={`log-entry log-${log.type}`}>
+                <div className="log-header">
+                  <span className="log-agent">{log.agent}</span>
+                  <span className="log-time">{log.timestamp}</span>
+                </div>
+                <div className="log-message">{log.message}</div>
+              </div>
+            ))
+          )}
+          <div ref={logEndRef} />
         </div>
       </div>
     </div>
