@@ -61,7 +61,7 @@ export default function Home() {
   }, [agentLogs])
 
   // Add log entry
-  const addLog = (
+  function addLog(
     agent: string, 
     message: string, 
     type?: 'info' | 'success' | 'processing',
@@ -69,7 +69,7 @@ export default function Home() {
     from?: string,
     to?: string,
     details?: string
-  ) => {
+  ) {
     const logType = type || 'info'
     const log: AgentLog = {
       id: Date.now().toString() + Math.random(),
