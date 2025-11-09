@@ -215,9 +215,9 @@ body {
   top: 64px;
   bottom: 0;
   z-index: 50;
+  overflow: visible;
   box-shadow: -2px 0 16px rgba(0, 0, 0, 0.15);
   border-left: 1px solid #2A2A2A;
-  overflow: hidden;
 }
 
 .sidebar-header {
@@ -3357,7 +3357,7 @@ select:focus-visible {
   width: 0 !important;
   min-width: 0;
   padding: 0;
-  overflow: hidden;
+  overflow: visible !important; /* Allow toggle button to be visible */
   border-left: none;
 }
 
@@ -3369,8 +3369,10 @@ select:focus-visible {
 }
 
 .agent-sidebar.collapsed .sidebar-toggle-handle {
-  left: 0;
+  left: -32px; /* Position it outside the collapsed sidebar */
   border-radius: 8px 0 0 8px;
+  background: var(--accenture-purple) !important;
+  box-shadow: -4px 0 12px rgba(161, 0, 255, 0.4);
 }
 
 .sidebar-header {

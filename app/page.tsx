@@ -21,7 +21,14 @@ export default function Home() {
   const [progress, setProgress] = useState(0)
   const [progressStatus, setProgressStatus] = useState('')
   const [agentLogs, setAgentLogs] = useState<AgentLog[]>([])
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    // Initialize from localStorage if available
+    if (typeof window !== 'undefined') {
+      const savedState = localStorage.getItem('agentSidebarOpen')
+      return savedState !== null ? savedState === 'true' : true
+    }
+    return true
+  })
   const [results, setResults] = useState<any[]>([])
   const [showResults, setShowResults] = useState(false)
   const [activeTab, setActiveTab] = useState('results')
@@ -33,14 +40,6 @@ export default function Home() {
       logEndRef.current.scrollIntoView({ behavior: 'smooth' })
     }
   }, [agentLogs])
-
-  // Load sidebar state from localStorage
-  useEffect(() => {
-    const savedState = localStorage.getItem('agentSidebarOpen')
-    if (savedState !== null) {
-      setIsSidebarOpen(savedState === 'true')
-    }
-  }, [])
 
   function toggleSidebar() {
     const newState = !isSidebarOpen
