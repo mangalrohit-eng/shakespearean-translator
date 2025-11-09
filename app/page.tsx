@@ -21,7 +21,6 @@ export default function Home() {
   const [progress, setProgress] = useState(0)
   const [progressStatus, setProgressStatus] = useState('')
   const [agentLogs, setAgentLogs] = useState<AgentLog[]>([])
-  const [selectedLog, setSelectedLog] = useState<AgentLog | null>(null)
   const logEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -81,156 +80,85 @@ export default function Home() {
     setProgressStatus('Initializing AI agents...')
     setAgentLogs([])
 
-    addLog('System', 'Workflow initiated - starting multi-agent analysis', 'info')
+    addLog('System', 'Workflow initiated - connecting to real agent pipeline', 'info')
     
     try {
       const formData = new FormData()
       formData.append('file', file)
+      
+      // Get custom instructions from localStorage
+      const storedInstructions = localStorage.getItem('customInstructions')
+      if (storedInstructions) {
+        formData.append('customInstructions', storedInstructions)
+      }
 
-      const progressInterval = setInterval(() => {
-        setProgress(prev => {
-          if (prev < 90) return prev + 10
-          return prev
-        })
-      }, 500)
-
-      setTimeout(() => {
-        setProgressStatus('Orchestrator planning workflow...')
-        addLog('OrchestratorAgent', 'Initializing workflow coordination using GPT-4o-mini', 'processing')
-      }, 500)
-      
-      setTimeout(() => {
-        addLog('OrchestratorAgent', 'Reasoning: Analyzing file structure and determining optimal agent sequence', 'info')
-      }, 900)
-      
-      setTimeout(() => {
-        addLog('OrchestratorAgent', 'Decision: Route to ExcelReaderAgent → FilterAgent → AnalyzerAgent', 'info')
-      }, 1200)
-      
-      setTimeout(() => {
-        addLog('OrchestratorAgent', '→ Dispatching ExcelReaderAgent with task: Parse uploaded Excel file', 'info', {
-          task: 'parseExcel',
-          target: 'ExcelReaderAgent',
-          payload: {
-            fileBuffer: 'ArrayBuffer (binary data)',
-            instructions: 'Extract all rows with columns: ID, Client Name, Opp Name, Client Group, Deal Size, Total'
-          }
-        })
-      }, 1500)
-      
-      setTimeout(() => {
-        setProgressStatus('Excel Reader parsing file...')
-        addLog('ExcelReaderAgent', 'Received task from Orchestrator - initiating file parsing', 'processing')
-      }, 1800)
-      
-      setTimeout(() => {
-        addLog('ExcelReaderAgent', 'LLM Reasoning: Identifying columns (ID, Client Name, Opp Name, Client Group...)', 'info')
-      }, 2300)
-      
-      setTimeout(() => {
-        addLog('ExcelReaderAgent', '→ Sending parsed data back to Orchestrator (rows extracted)', 'success', {
-          status: 'complete',
-          data: {
-            totalRows: 150,
-            columns: ['ID', 'Client Name', 'Opp Name', 'Client Group', 'Deal Size', 'Total'],
-            sampleRow: { ID: '001', 'Client Name': 'ABC Corp', 'Opp Name': 'AI Modernization', 'Client Group': 'US-Comms & Media' }
-          }
-        })
-      }, 2800)
-      
-      setTimeout(() => {
-        addLog('OrchestratorAgent', 'Received response from ExcelReaderAgent - validating data quality', 'processing')
-      }, 3100)
-      
-      setTimeout(() => {
-        addLog('OrchestratorAgent', 'Decision: Data valid → Proceed to FilterAgent', 'info')
-      }, 3400)
-      
-      setTimeout(() => {
-        addLog('OrchestratorAgent', '→ Dispatching FilterAgent with criteria: US-Comms & Media', 'info')
-      }, 3700)
-      
-      setTimeout(() => {
-        setProgressStatus('Filter Agent identifying opportunities...')
-        addLog('FilterAgent', 'Received filtering task from Orchestrator', 'processing')
-      }, 4000)
-      
-      setTimeout(() => {
-        addLog('FilterAgent', 'LLM Reasoning: Applying filter rules to Client Group field', 'info')
-      }, 4500)
-      
-      setTimeout(() => {
-        addLog('FilterAgent', '→ Sending filtered opportunities back to Orchestrator', 'success', {
-          status: 'complete',
-          data: {
-            originalCount: 150,
-            filteredCount: 45,
-            criteria: 'Client Group = "US-Comms & Media"',
-            sampleOpportunities: [
-              { ID: '001', 'Client Name': 'ABC Corp', 'Opp Name': 'AI Modernization' },
-              { ID: '007', 'Client Name': 'XYZ Media', 'Opp Name': 'Data Analytics Platform' }
-            ]
-          }
-        })
-      }, 5000)
-      
-      setTimeout(() => {
-        addLog('OrchestratorAgent', 'Received filtered data - evaluating next steps', 'processing')
-      }, 5300)
-      
-      setTimeout(() => {
-        addLog('OrchestratorAgent', 'Decision: Opportunities found → Route to AnalyzerAgent for AI tagging', 'info')
-      }, 5600)
-      
-      setTimeout(() => {
-        addLog('OrchestratorAgent', '→ Dispatching AnalyzerAgent with custom instructions', 'info')
-      }, 5900)
-      
-      setTimeout(() => {
-        setProgressStatus('Analyzer Agent tagging with AI...')
-        addLog('AnalyzerAgent', 'Received analysis task from Orchestrator', 'processing')
-      }, 6200)
-      
-      setTimeout(() => {
-        addLog('AnalyzerAgent', 'LLM Reasoning: Analyzing deal names for AI/Analytics/Data keywords', 'info')
-      }, 6800)
-      
-      setTimeout(() => {
-        addLog('AnalyzerAgent', 'Applying custom rules + GPT-4o-mini semantic analysis', 'processing')
-      }, 7400)
-      
-      setTimeout(() => {
-        addLog('AnalyzerAgent', 'Generating tags, confidence scores, and rationale for each opportunity', 'processing')
-      }, 8000)
-
-      const response = await fetch('/api/analyze', {
+      // Use the streaming endpoint to get REAL agent data
+      const response = await fetch('/api/analyze-stream', {
         method: 'POST',
         body: formData,
       })
 
-      clearInterval(progressInterval)
-      setProgress(100)
-      setProgressStatus('Complete!')
-      addLog('AnalyzerAgent', '→ Sending tagged opportunities back to Orchestrator', 'success')
-      addLog('OrchestratorAgent', 'Received final results - validating output quality', 'processing')
-      addLog('OrchestratorAgent', 'Decision: All agents completed successfully → Finalize workflow', 'success')
-      addLog('OrchestratorAgent', 'Generating Excel output with tags, confidence scores, and rationale', 'info')
-
       if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to analyze opportunities')
+        throw new Error('Failed to start analysis')
       }
 
-      const blob = await response.blob()
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = 'tagged-opportunities.xlsx'
-      link.click()
-      
-      addLog('System', 'Excel file generated and downloaded successfully', 'success')
-      setSuccess('Analysis complete! File downloaded.')
-      setFile(null)
+      const reader = response.body?.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+
+          buffer += decoder.decode(value, { stream: true })
+          const lines = buffer.split('\n')
+          buffer = lines.pop() || ''
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6))
+                
+                if (data.type === 'agent') {
+                  // Real agent activity from backend with REAL data
+                  const logType = data.status === 'active' ? 'processing' : data.status === 'complete' ? 'success' : 'info'
+                  addLog(data.agent, data.action, logType, data.details)
+                  setProgress(prev => Math.min(prev + 3, 90))
+                } else if (data.type === 'progress') {
+                  setProgressStatus(`${data.status} (${data.current}/${data.total})`)
+                  setProgress((data.current / data.total) * 90)
+                } else if (data.type === 'complete') {
+                  setProgress(100)
+                  setProgressStatus('Complete!')
+                  addLog('System', `Analysis complete! ${data.total} opportunities processed.`, 'success')
+                  
+                  // Download the Excel file
+                  const downloadResponse = await fetch('/api/analyze', {
+                    method: 'POST',
+                    body: formData,
+                  })
+                  
+                  if (downloadResponse.ok) {
+                    const blob = await downloadResponse.blob()
+                    const url = URL.createObjectURL(blob)
+                    const link = document.createElement('a')
+                    link.href = url
+                    link.download = 'tagged-opportunities.xlsx'
+                    link.click()
+                    setSuccess('Analysis complete! File downloaded.')
+                    setFile(null)
+                  }
+                } else if (data.type === 'error') {
+                  throw new Error(data.message)
+                }
+              } catch (e: any) {
+                console.warn('Failed to parse SSE data:', e)
+              }
+            }
+          }
+        }
+      }
     } catch (err: any) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -374,62 +302,31 @@ export default function Home() {
                   <span className="log-agent">{log.agent}</span>
                   <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
                     {log.detailedData && (
-                      <button 
-                        className="log-details-btn"
-                        onClick={() => setSelectedLog(log)}
-                        title="View detailed data"
-                      >
+                      <span className="log-details-indicator" title="Has detailed payload data">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14">
                           <circle cx="12" cy="12" r="10" strokeWidth="2"/>
                           <path d="M12 16v-4M12 8h.01" strokeWidth="2" strokeLinecap="round"/>
                         </svg>
-                      </button>
+                      </span>
                     )}
                     <span className="log-time">{log.timestamp}</span>
                   </div>
                 </div>
                 <div className={getMessageClass(log.message)}>{log.message}</div>
+                {log.detailedData && (
+                  <div className="log-details-tooltip">
+                    <div className="tooltip-header">Payload Data</div>
+                    <pre className="tooltip-payload">
+                      {JSON.stringify(log.detailedData, null, 2)}
+                    </pre>
+                  </div>
+                )}
               </div>
             ))
           )}
           <div ref={logEndRef} />
         </div>
       </div>
-
-      {selectedLog && (
-        <div className="modal-overlay" onClick={() => setSelectedLog(null)}>
-          <div className="modal-content agent-data-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <div>
-                <h2>Agent Communication Details</h2>
-                <p style={{fontSize: '14px', color: '#666', margin: '4px 0 0 0'}}>
-                  {selectedLog.agent} • {selectedLog.timestamp}
-                </p>
-              </div>
-              <button className="modal-close" onClick={() => setSelectedLog(null)}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
-                  <path d="M6 6l12 12M6 18L18 6" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-              </button>
-            </div>
-            <div className="modal-body">
-              <div className="agent-message-box">
-                <h4>Message</h4>
-                <p>{selectedLog.message}</p>
-              </div>
-              
-              {selectedLog.detailedData && (
-                <div className="agent-data-box">
-                  <h4>Data Payload</h4>
-                  <pre className="data-payload">
-                    {JSON.stringify(selectedLog.detailedData, null, 2)}
-                  </pre>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
