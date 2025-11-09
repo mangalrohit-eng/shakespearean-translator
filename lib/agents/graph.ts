@@ -1,4 +1,4 @@
-import { StateGraph, END, MemorySaver } from '@langchain/langgraph'
+import { StateGraph, END, START, MemorySaver } from '@langchain/langgraph'
 import { WorkflowState, createInitialState } from './state'
 import { excelReaderAgent } from './excel-reader-agent'
 import { filterAgent } from './filter-agent'
@@ -105,8 +105,8 @@ export function createWorkflowGraph() {
   workflow.addNode('filter', filterAgent)
   workflow.addNode('analyzer', analyzerAgent)
 
-  // Set entry point
-  workflow.setEntryPoint('excelReader')
+  // Set entry point - connect START to first agent
+  workflow.addEdge(START, 'excelReader')
 
   // Add conditional edges (routing)
   workflow.addConditionalEdges('excelReader', shouldContinueAfterExcelRead, {
