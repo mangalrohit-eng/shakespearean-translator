@@ -45,7 +45,6 @@ export default function Home() {
   const abortControllerRef = useRef<AbortController | null>(null)
   const logEndRef = useRef<HTMLDivElement>(null)
 
-  // Calculate analytics insights
   const insights = useMemo(() => {
     if (results.length > 0) {
       return generateInsights(results)
@@ -53,41 +52,33 @@ export default function Home() {
     return null
   }, [results])
 
-  // Auto-scroll logs to bottom
   useEffect(() => {
     if (logEndRef.current) {
       logEndRef.current.scrollIntoView({ behavior: 'smooth' })
     }
   }, [agentLogs])
 
-  // Add log entry
-  function addLog(
-    agent: string, 
-    message: string, 
-    type?: 'info' | 'success' | 'processing',
-    agentType?: 'orchestrator' | 'agent' | 'tool',
+  const addLog = (
+    agent: string,
+    message: string,
+    logType: string = 'info',
+    agentType?: string,
     from?: string,
     to?: string,
     details?: string
-  ) {
-    const logType = type || 'info'
+  ) => {
     const log: AgentLog = {
       id: Date.now().toString() + Math.random(),
       timestamp: new Date().toLocaleTimeString(),
       agent,
       message,
-      type: logType,
-      agentType,
+      type: logType as 'info' | 'success' | 'processing',
+      agentType: agentType as 'orchestrator' | 'agent' | 'tool' | undefined,
       from,
       to,
       details,
     }
     setAgentLogs(prev => [...prev, log])
-  }
-
-  // Add communication log (agent-to-agent)
-  const addCommunication = (from: string, to: string, message: string) => {
-    addLog(`${from} to ${to}`, message, 'info', undefined, from, to, undefined)
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -137,7 +128,6 @@ export default function Home() {
     setShowResults(false)
     addLog('Orchestrator', 'Initializing multi-agent analysis pipeline...', 'info', 'orchestrator')
 
-    // Create abort controller for cancellation
     abortControllerRef.current = new AbortController()
 
     try {
@@ -162,8 +152,8 @@ export default function Home() {
         throw new Error('No response stream available')
       }
 
-      let results: any[] = []
-      let buffer = '' // Buffer for incomplete chunks
+      let resultsList: any[] = []
+      let buffer = ''
 
       while (true) {
         const { done, value } = await reader.read()
@@ -174,7 +164,6 @@ export default function Home() {
         buffer += chunk
         
         const lines = buffer.split('\n')
-        // Keep the last potentially incomplete line in the buffer
         buffer = lines.pop() || ''
 
         for (const line of lines) {
@@ -188,11 +177,10 @@ export default function Home() {
             if (data.type === 'progress') {
               setProgress(data)
             } else if (data.type === 'agent') {
-              // Determine REAL agent type based on actual agent names
-              let agentType: 'orchestrator' | 'agent' | 'tool' = 'agent'
+              let agentType = 'agent'
               const agentName = data.agent.toLowerCase()
               
-              if (agentName.includes('orchestratoragent') || agentName === 'orchestratoragent') {
+              if (agentName.includes('orchestratoragent')) {
                 agentType = 'orchestrator'
               } else if (agentName.includes('excelreaderagent') || agentName.includes('filteragent')) {
                 agentType = 'tool'
@@ -200,7 +188,6 @@ export default function Home() {
                 agentType = 'agent'
               }
               
-              // Add to logs with details
               const logType = data.status === 'complete' ? 'success' : 'processing'
               addLog(data.agent, data.action, logType, agentType, undefined, undefined, data.details)
               
@@ -216,19 +203,17 @@ export default function Home() {
                 return [...prev, { agent: data.agent, action: data.action, status: data.status }]
               })
             } else if (data.type === 'result') {
-              results.push(data.opportunity)
+              resultsList.push(data.opportunity)
             } else if (data.type === 'complete') {
-              // Show results inline
-              setResults(results)
+              setResults(resultsList)
               setShowResults(true)
-              setSuccess(`Analysis complete! ${results.length} opportunities analyzed.`)
+              setSuccess(`Analysis complete! ${resultsList.length} opportunities analyzed.`)
               return
             } else if (data.type === 'error') {
               throw new Error(data.message)
             }
             } catch (parseError) {
               console.warn('Failed to parse JSON chunk:', line, parseError)
-              // Skip malformed chunks - they might be incomplete
             }
           }
         }
@@ -265,9 +250,20 @@ export default function Home() {
     setAgents([])
   }
 
+  const downloadExcel = () => {
+    if (results.length === 0) return
+
+    const dataStr = JSON.stringify(results)
+    const blob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'analyzed-opportunities.json'
+    link.click()
+  }
+
   return (
     <div className="app-layout">
-      {/* Agent Activity Sidebar */}
       {showSidebar && (
         <div className="agent-sidebar">
           <div className="sidebar-header">
@@ -318,7 +314,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* Main Content */}
       <div className={`main-content ${showSidebar ? 'with-sidebar' : ''}`}>
         {!showSidebar && (
           <button 
@@ -329,7 +324,6 @@ export default function Home() {
           </button>
         )}
 
-        {/* Accenture Header */}
         <header className="accenture-header">
           <div className="accenture-header-container">
             <div className="accenture-brand">
@@ -396,7 +390,6 @@ export default function Home() {
       {error && <div className="error">{error}</div>}
       {success && <div className="success">{success}</div>}
 
-      {/* Upload and Analyze Section */}
       {!showResults && (
       <div className="upload-analyze-section">
         <div
@@ -476,70 +469,101 @@ export default function Home() {
       </div>
       )}
 
-      {loading && (
-        <>
-          {/* Agent Pipeline Visualization */}
-          <div className="agent-pipeline">
-            <h3>Multi-Agent Pipeline</h3>
-            <div className="agents-container">
-              {agents.map((agent, index) => (
-                <div 
-                  key={agent.agent} 
-                  className={`agent-card ${agent.status}`}
-                >
-                  <div className="agent-header">
-                    <span className="agent-icon">
-                      {agent.status === 'active' ? (
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
-                          <path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor"/>
-                        </svg>
-                      ) : (
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
-                          <path d="M20 6L9 17l-5-5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      )}
-                    </span>
-                    <span className="agent-name">{agent.agent}</span>
-                  </div>
-                  <div className="agent-action">{agent.action}</div>
-                  {agent.status === 'active' && (
-                    <div className="agent-spinner"></div>
-                  )}
-                </div>
-              ))}
+      {loading && progress && (
+        <div className="progress-container">
+          <div className="progress-header">
+            <span>Processing: {progress.current} / {progress.total}</span>
+            <span className="progress-percentage">
+              {Math.round((progress.current / progress.total) * 100)}%
+            </span>
+          </div>
+          <div className="progress-bar">
+            <div 
+              className="progress-fill" 
+              style={{ width: `${(progress.current / progress.total) * 100}%` }}
+            />
+          </div>
+          <div className="progress-current">{progress.currentOpp}</div>
+        </div>
+      )}
+
+      {showResults && results.length > 0 && (
+        <div className="results-section">
+          <div className="results-header-inline">
+            <h2>Analysis Results</h2>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button className="analytics-btn-inline" onClick={() => setShowAnalyticsModal(true)}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
+                  <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+                Analytics
+              </button>
+              <button className="download-btn-inline" onClick={downloadExcel}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4m4-5l5 5 5-5m-5 5V3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Download Excel
+              </button>
             </div>
           </div>
 
-          {/* Progress Bar */}
-          {progress && (
-            <div className="progress-container">
-              <div className="progress-header">
-                <span className="progress-title">📊 Overall Progress</span>
-                <span className="progress-count">
-                  {progress.current} / {progress.total} opportunities
-                </span>
-              </div>
-              <div className="progress-bar">
-                <div 
-                  className="progress-fill"
-                  style={{ width: `${(progress.current / progress.total) * 100}%` }}
-                />
-              </div>
-              <div className="progress-details">
-                <div className="current-opp">
-                  <strong>Current:</strong> {progress.currentOpp}
-                </div>
-                <div className="progress-status">
-                  <span className="status-badge">{progress.status}</span>
-                </div>
-              </div>
+          <div className="results-stats-inline">
+            <div className="stat-item-inline">
+              <span className="stat-label-inline">Total Analyzed</span>
+              <span className="stat-value-inline">{results.length}</span>
             </div>
-          )}
-        </>
+            <div className="stat-item-inline">
+              <span className="stat-label-inline">AI Tagged</span>
+              <span className="stat-value-inline ai-color">{results.filter(r => r.tags.includes('AI')).length}</span>
+            </div>
+            <div className="stat-item-inline">
+              <span className="stat-label-inline">Analytics Tagged</span>
+              <span className="stat-value-inline analytics-color">{results.filter(r => r.tags.includes('Analytics')).length}</span>
+            </div>
+            <div className="stat-item-inline">
+              <span className="stat-label-inline">Data Tagged</span>
+              <span className="stat-value-inline data-color">{results.filter(r => r.tags.includes('Data')).length}</span>
+            </div>
+          </div>
+
+          <div className="results-table-container">
+            <table className="results-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Opportunity Name</th>
+                  <th>Tags</th>
+                  <th>Confidence</th>
+                  <th>Rationale</th>
+                </tr>
+              </thead>
+              <tbody>
+                {results.map((result, idx) => (
+                  <tr key={idx}>
+                    <td>{result.id}</td>
+                    <td>{result.oppName}</td>
+                    <td>
+                      <div className="tags-cell">
+                        {result.tags && result.tags.length > 0 ? (
+                          result.tags.map((tag: string, i: number) => (
+                            <span key={i} className={`tag tag-${tag.toLowerCase()}`}>{tag}</span>
+                          ))
+                        ) : (
+                          <span className="tag tag-none">None</span>
+                        )}
+                      </div>
+                    </td>
+                    <td>{result.confidence}%</td>
+                    <td className="rationale-cell">{result.rationale}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
 
-      {/* Analytics Modal */}
-      {showAnalyticsModal && results.length > 0 && (
+      {showAnalyticsModal && results.length > 0 && insights && (
         <div className="modal-overlay" onClick={() => setShowAnalyticsModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
@@ -551,175 +575,25 @@ export default function Home() {
               </button>
             </div>
             <div className="modal-body">
-              {insights ? (
-                <>
-                  {/* Client Breakdown */}
-                  <div className="analytics-section">
-                    <h3>Top Clients</h3>
-                    <div className="client-breakdown">
-                      {insights.clientBreakdown.slice(0, 5).map((client, idx) => (
-                        <div key={idx} className="client-row">
-                          <div className="client-info">
-                            <strong>{client.clientName}</strong>
-                            <span className="client-total">{client.total} opportunities</span>
-                          </div>
-                          <div className="client-tags">
-                            {client.aiCount > 0 && <span className="mini-tag ai">AI: {client.aiCount}</span>}
-                            {client.analyticsCount > 0 && <span className="mini-tag analytics">Analytics: {client.analyticsCount}</span>}
-                            {client.dataCount > 0 && <span className="mini-tag data">Data: {client.dataCount}</span>}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Confidence Distribution */}
-                  <div className="analytics-section">
-                    <h3>Confidence Distribution</h3>
-                    <div className="confidence-chart">
-                      <div className="conf-bar">
-                        <span>High (80-100%)</span>
-                        <div className="conf-bar-fill" style={{width: `${(insights.confidenceDistribution.high / results.length) * 100}%`, background: 'var(--success-green)'}}>
-                          {insights.confidenceDistribution.high}
-                        </div>
+              <div className="analytics-section">
+                <h3>Top Clients</h3>
+                <div className="client-breakdown">
+                  {insights.clientBreakdown.slice(0, 5).map((client: any, idx: number) => (
+                    <div key={idx} className="client-row">
+                      <div className="client-info">
+                        <strong>{client.clientName}</strong>
+                        <span className="client-total">{client.total} opportunities</span>
                       </div>
-                      <div className="conf-bar">
-                        <span>Medium (50-79%)</span>
-                        <div className="conf-bar-fill" style={{width: `${(insights.confidenceDistribution.medium / results.length) * 100}%`, background: 'var(--warning-orange)'}}>
-                          {insights.confidenceDistribution.medium}
-                        </div>
-                      </div>
-                      <div className="conf-bar">
-                        <span>Low (0-49%)</span>
-                        <div className="conf-bar-fill" style={{width: `${(insights.confidenceDistribution.low / results.length) * 100}%`, background: 'var(--accenture-gray)'}}>
-                          {insights.confidenceDistribution.low}
-                        </div>
+                      <div className="client-tags">
+                        {client.aiCount > 0 && <span className="mini-tag ai">AI: {client.aiCount}</span>}
+                        {client.analyticsCount > 0 && <span className="mini-tag analytics">Analytics: {client.analyticsCount}</span>}
+                        {client.dataCount > 0 && <span className="mini-tag data">Data: {client.dataCount}</span>}
                       </div>
                     </div>
-                  </div>
-
-                  {/* Tag Co-occurrence */}
-                  <div className="analytics-section">
-                    <h3>Tag Combinations</h3>
-                    <div className="tag-combos">
-                      {insights.tagCoOccurrence.slice(0, 6).map((combo, idx) => (
-                        <div key={idx} className="combo-item">
-                          <span className="combo-label">{combo.combination}</span>
-                          <span className="combo-value">{combo.count} ({combo.percentage}%)</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Top Keywords */}
-                  <div className="analytics-section">
-                    <h3>Top Keywords</h3>
-                    <div className="keywords-list">
-                      {insights.topKeywords.slice(0, 10).map((kw, idx) => (
-                        <span key={idx} className="keyword-badge">
-                          {kw.keyword} ({kw.count})
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div style={{padding: '40px', textAlign: 'center', color: 'var(--accenture-gray)'}}>
-                  No analytics data available
+                  ))}
                 </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Results Section */}
-      {showResults && results.length > 0 && (
-        <div className="results-section">
-          <div className="results-header-inline">
-            <h2>Analysis Results ({results.length} opportunities)</h2>
-            <button 
-              className="download-btn-inline"
-              onClick={async () => {
-                const response = await fetch('/api/export', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ results }),
-                })
-                const blob = await response.blob()
-                const url = window.URL.createObjectURL(blob)
-                const a = document.createElement('a')
-                a.href = url
-                a.download = `analysis-${new Date().toISOString().split('T')[0]}.xlsx`
-                a.click()
-              }}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4m4-5l5 5 5-5m-5 5V3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              Download Excel
-            </button>
-          </div>
-
-          <div className="results-stats-inline">
-            <div className="stat-inline">
-              <span className="stat-label-inline">AI:</span>
-              <span className="stat-value-inline">{results.filter(r => r.tags.includes('AI')).length}</span>
-            </div>
-            <div className="stat-inline">
-              <span className="stat-label-inline">Analytics:</span>
-              <span className="stat-value-inline">{results.filter(r => r.tags.includes('Analytics')).length}</span>
-            </div>
-            <div className="stat-inline">
-              <span className="stat-label-inline">Data:</span>
-              <span className="stat-value-inline">{results.filter(r => r.tags.includes('Data')).length}</span>
-            </div>
-            <div className="stat-inline">
-              <span className="stat-label-inline">Avg Confidence:</span>
-              <span className="stat-value-inline">
-                {Math.round(results.reduce((sum, r) => sum + r.confidence, 0) / results.length)}%
-              </span>
-            </div>
-          </div>
-
-          <div className="results-table-inline">
-            <table>
-              <thead>
-                <tr>
-                  <th>Opportunity</th>
-                  <th>Tags</th>
-                  <th>Confidence</th>
-                  <th>Rationale</th>
-                </tr>
-              </thead>
-              <tbody>
-                {results.slice(0, 10).map((result, idx) => (
-                  <tr key={idx}>
-                    <td className="opp-name-inline">{result.oppName}</td>
-                    <td>
-                      <div className="tags-inline">
-                        {result.tags.length > 0 ? (
-                          result.tags.map((tag: string) => (
-                            <span key={tag} className={`tag tag-${tag.toLowerCase()}`}>
-                              {tag}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="tag tag-none">None</span>
-                        )}
-                      </div>
-                    </td>
-                    <td>{result.confidence}%</td>
-                    <td className="rationale-inline">{result.rationale}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {results.length > 10 && (
-              <div className="results-footer-inline">
-                Showing 10 of {results.length} opportunities. Download Excel to see all.
               </div>
-            )}
+            </div>
           </div>
         </div>
       )}
