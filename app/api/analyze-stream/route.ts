@@ -43,17 +43,7 @@ export async function POST(request: Request) {
         // Convert file to buffer
         const arrayBuffer = await file.arrayBuffer()
 
-        // Send initial orchestrator message
-        controller.enqueue(
-          encoder.encode(`data: ${JSON.stringify({
-            type: 'agent',
-            agent: 'Orchestrator',
-            action: 'Initializing multi-agent workflow: ExcelReader → Filter → Analyzer',
-            status: 'active'
-          })}\n\n`)
-        )
-
-        await new Promise(resolve => setTimeout(resolve, 300))
+        // No fake orchestrator - real agents will report themselves
 
         // Track sent results to avoid duplicates
         const sentResultIds = new Set<string>()
@@ -116,15 +106,7 @@ export async function POST(request: Request) {
           return
         }
 
-        // Send final orchestrator message
-        controller.enqueue(
-          encoder.encode(`data: ${JSON.stringify({
-            type: 'agent',
-            agent: 'Orchestrator',
-            action: `Workflow complete. All ${finalState.analyzedOpportunities.length} opportunities processed through multi-agent pipeline. Ready for export.`,
-            status: 'complete'
-          })}\n\n`)
-        )
+        // Workflow complete - agents have already reported their status
 
         // Send any remaining results
         finalState.analyzedOpportunities.forEach(result => {

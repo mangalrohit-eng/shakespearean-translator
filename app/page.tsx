@@ -184,12 +184,16 @@ export default function Home() {
             if (data.type === 'progress') {
               setProgress(data)
             } else if (data.type === 'agent') {
-              // Determine agent type
+              // Determine REAL agent type based on actual agent names
               let agentType: 'orchestrator' | 'agent' | 'tool' = 'agent'
-              if (data.agent.toLowerCase().includes('orchestrator')) {
+              const agentName = data.agent.toLowerCase()
+              
+              if (agentName.includes('orchestratoragent') || agentName === 'orchestratoragent') {
                 agentType = 'orchestrator'
-              } else if (data.agent.toLowerCase().includes('reader') || data.agent.toLowerCase().includes('writer') || data.agent.toLowerCase().includes('filter')) {
+              } else if (agentName.includes('excelreaderagent') || agentName.includes('filteragent')) {
                 agentType = 'tool'
+              } else if (agentName.includes('analyzeragent')) {
+                agentType = 'agent'
               }
               
               // Add to logs
