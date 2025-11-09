@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import { generateInsights } from '@/lib/analytics/insights'
 
 interface ProgressUpdate {
   current: number
@@ -39,6 +40,7 @@ export default function Home() {
   const [showSidebar, setShowSidebar] = useState(true)
   const [results, setResults] = useState<any[]>([])
   const [showResults, setShowResults] = useState(false)
+  const [showAnalyticsModal, setShowAnalyticsModal] = useState(false)
   const abortControllerRef = useRef<AbortController | null>(null)
   const logEndRef = useRef<HTMLDivElement>(null)
 
@@ -304,26 +306,48 @@ export default function Home() {
             className="sidebar-toggle-btn"
             onClick={() => setShowSidebar(true)}
           >
-            📋 Show Activity
+            ◫ Show Activity
           </button>
         )}
 
-        <div className="container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
-            <div style={{ flex: 1 }}>
-              <h1>🎯 Data & AI Opportunities Analyzer</h1>
-              <p className="subtitle">
-                Upload your opportunities Excel file to identify AI, Analytics, and Data-related deals
-              </p>
+        {/* Accenture Header */}
+        <header className="app-header">
+          <div className="header-content">
+            <div className="header-left">
+              <div className="accenture-logo">
+                <div className="accent-symbol">{'>'}</div>
+                <div className="company-name">Accenture</div>
+              </div>
+              <div className="header-divider"></div>
+              <div className="app-title">Opportunity Intelligence Platform</div>
             </div>
-            <button
-              className="back-btn"
-              onClick={() => router.push('/settings')}
-              style={{ marginTop: '8px' }}
-            >
-              ⚙ Configure Rules
-            </button>
+            <nav className="header-nav">
+              <button className={`nav-item ${!showResults ? 'active' : ''}`}>
+                <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+                Analyze
+              </button>
+              <button className="nav-item" onClick={() => router.push('/settings')}>
+                <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" strokeWidth="2"/>
+                  <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" strokeWidth="2"/>
+                </svg>
+                Settings
+              </button>
+              {showResults && (
+                <button className={`nav-item ${showAnalyticsModal ? 'active' : ''}`} onClick={() => setShowAnalyticsModal(true)}>
+                  <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                  Analytics
+                </button>
+              )}
+            </nav>
           </div>
+        </header>
+
+        <div className="container">
 
       {error && <div className="error">{error}</div>}
       {success && <div className="success">{success}</div>}
@@ -337,7 +361,13 @@ export default function Home() {
         >
           {!file ? (
             <>
-              <div className="upload-icon-small">📊</div>
+              <div className="upload-icon-small">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="24" height="24">
+                  <path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-1" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M9 15l3 -3l3 3" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M12 12l0 9" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </div>
               <div>
                 <p className="upload-text-small">Drag & drop or</p>
                 <label htmlFor="file-input" className="file-label-inline">
@@ -354,7 +384,11 @@ export default function Home() {
             </>
           ) : (
             <div className="file-info-inline">
-              <div className="file-icon-small">✓</div>
+              <div className="file-icon-small">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
+                  <path d="M20 6L9 17l-5-5" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
               <div className="file-details-inline">
                 <p className="file-name-small">{file.name}</p>
                 <p className="file-size-small">{(file.size / 1024).toFixed(2)} KB</p>
@@ -372,7 +406,10 @@ export default function Home() {
               className="stop-btn-inline"
               onClick={handleStop}
             >
-              ⏹️ Stop
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                <rect x="6" y="6" width="12" height="12" rx="1"/>
+              </svg>
+              Stop
             </button>
           ) : (
             <button
@@ -380,7 +417,10 @@ export default function Home() {
               onClick={handleAnalyze}
               disabled={!file}
             >
-              🚀 Analyze
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
+                <path d="M5 3l14 9-14 9V3z" strokeWidth="2" strokeLinejoin="round"/>
+              </svg>
+              Analyze
             </button>
           )}
         </div>
@@ -394,7 +434,7 @@ export default function Home() {
         <>
           {/* Agent Pipeline Visualization */}
           <div className="agent-pipeline">
-            <h3>🤖 Multi-Agent Pipeline</h3>
+            <h3>Multi-Agent Pipeline</h3>
             <div className="agents-container">
               {agents.map((agent, index) => (
                 <div 
@@ -403,7 +443,15 @@ export default function Home() {
                 >
                   <div className="agent-header">
                     <span className="agent-icon">
-                      {agent.status === 'active' ? '🔄' : '✅'}
+                      {agent.status === 'active' ? (
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
+                          <path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor"/>
+                        </svg>
+                      ) : (
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
+                          <path d="M20 6L9 17l-5-5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      )}
                     </span>
                     <span className="agent-name">{agent.agent}</span>
                   </div>
