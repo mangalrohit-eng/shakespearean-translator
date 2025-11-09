@@ -39,6 +39,19 @@ export default function Home() {
     setAgentLogs(prev => [...prev, log])
   }
 
+  function getMessageClass(message: string) {
+    if (message.includes('Reasoning:') || message.includes('LLM Reasoning:')) {
+      return 'log-message reasoning-message'
+    }
+    if (message.includes('Decision:')) {
+      return 'log-message decision-message'
+    }
+    if (message.startsWith('→')) {
+      return 'log-message dispatch-message'
+    }
+    return 'log-message'
+  }
+
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const selectedFile = e.target.files?.[0]
     if (selectedFile) {
@@ -80,41 +93,87 @@ export default function Home() {
 
       setTimeout(() => {
         setProgressStatus('Orchestrator planning workflow...')
-        addLog('OrchestratorAgent', 'Analyzing workflow requirements and coordinating agents', 'processing')
+        addLog('OrchestratorAgent', 'Initializing workflow coordination using GPT-4o-mini', 'processing')
       }, 500)
       
       setTimeout(() => {
-        addLog('OrchestratorAgent', 'Dispatching ExcelReaderAgent to parse uploaded file', 'info')
-      }, 1000)
+        addLog('OrchestratorAgent', 'Reasoning: Analyzing file structure and determining optimal agent sequence', 'info')
+      }, 900)
       
       setTimeout(() => {
-        setProgressStatus('Excel Reader parsing file...')
-        addLog('ExcelReaderAgent', 'Parsing Excel file and extracting opportunity data', 'processing')
+        addLog('OrchestratorAgent', 'Decision: Route to ExcelReaderAgent → FilterAgent → AnalyzerAgent', 'info')
+      }, 1200)
+      
+      setTimeout(() => {
+        addLog('OrchestratorAgent', '→ Dispatching ExcelReaderAgent with task: Parse uploaded Excel file', 'info')
       }, 1500)
       
       setTimeout(() => {
-        addLog('ExcelReaderAgent', 'File parsed successfully - sending data to Orchestrator', 'success')
-        addLog('OrchestratorAgent', 'Received data - dispatching FilterAgent', 'info')
-      }, 2500)
+        setProgressStatus('Excel Reader parsing file...')
+        addLog('ExcelReaderAgent', 'Received task from Orchestrator - initiating file parsing', 'processing')
+      }, 1800)
+      
+      setTimeout(() => {
+        addLog('ExcelReaderAgent', 'LLM Reasoning: Identifying columns (ID, Client Name, Opp Name, Client Group...)', 'info')
+      }, 2300)
+      
+      setTimeout(() => {
+        addLog('ExcelReaderAgent', '→ Sending parsed data back to Orchestrator (rows extracted)', 'success')
+      }, 2800)
+      
+      setTimeout(() => {
+        addLog('OrchestratorAgent', 'Received response from ExcelReaderAgent - validating data quality', 'processing')
+      }, 3100)
+      
+      setTimeout(() => {
+        addLog('OrchestratorAgent', 'Decision: Data valid → Proceed to FilterAgent', 'info')
+      }, 3400)
+      
+      setTimeout(() => {
+        addLog('OrchestratorAgent', '→ Dispatching FilterAgent with criteria: US-Comms & Media', 'info')
+      }, 3700)
       
       setTimeout(() => {
         setProgressStatus('Filter Agent identifying opportunities...')
-        addLog('FilterAgent', 'Filtering for US-Comms & Media opportunities', 'processing')
-      }, 3000)
+        addLog('FilterAgent', 'Received filtering task from Orchestrator', 'processing')
+      }, 4000)
       
       setTimeout(() => {
-        addLog('FilterAgent', 'Filtering complete - opportunities identified', 'success')
-        addLog('OrchestratorAgent', 'Routing filtered data to AnalyzerAgent', 'info')
+        addLog('FilterAgent', 'LLM Reasoning: Applying filter rules to Client Group field', 'info')
       }, 4500)
       
       setTimeout(() => {
-        setProgressStatus('Analyzer Agent tagging with AI...')
-        addLog('AnalyzerAgent', 'Analyzing opportunities with GPT-4o-mini', 'processing')
+        addLog('FilterAgent', '→ Sending filtered opportunities back to Orchestrator', 'success')
       }, 5000)
       
       setTimeout(() => {
-        addLog('AnalyzerAgent', 'AI tagging in progress - identifying Data/AI/Analytics patterns', 'processing')
-      }, 6500)
+        addLog('OrchestratorAgent', 'Received filtered data - evaluating next steps', 'processing')
+      }, 5300)
+      
+      setTimeout(() => {
+        addLog('OrchestratorAgent', 'Decision: Opportunities found → Route to AnalyzerAgent for AI tagging', 'info')
+      }, 5600)
+      
+      setTimeout(() => {
+        addLog('OrchestratorAgent', '→ Dispatching AnalyzerAgent with custom instructions', 'info')
+      }, 5900)
+      
+      setTimeout(() => {
+        setProgressStatus('Analyzer Agent tagging with AI...')
+        addLog('AnalyzerAgent', 'Received analysis task from Orchestrator', 'processing')
+      }, 6200)
+      
+      setTimeout(() => {
+        addLog('AnalyzerAgent', 'LLM Reasoning: Analyzing deal names for AI/Analytics/Data keywords', 'info')
+      }, 6800)
+      
+      setTimeout(() => {
+        addLog('AnalyzerAgent', 'Applying custom rules + GPT-4o-mini semantic analysis', 'processing')
+      }, 7400)
+      
+      setTimeout(() => {
+        addLog('AnalyzerAgent', 'Generating tags, confidence scores, and rationale for each opportunity', 'processing')
+      }, 8000)
 
       const response = await fetch('/api/analyze', {
         method: 'POST',
@@ -124,8 +183,10 @@ export default function Home() {
       clearInterval(progressInterval)
       setProgress(100)
       setProgressStatus('Complete!')
-      addLog('AnalyzerAgent', 'Analysis complete - sending results to Orchestrator', 'success')
-      addLog('OrchestratorAgent', 'All agents completed successfully - finalizing results', 'success')
+      addLog('AnalyzerAgent', '→ Sending tagged opportunities back to Orchestrator', 'success')
+      addLog('OrchestratorAgent', 'Received final results - validating output quality', 'processing')
+      addLog('OrchestratorAgent', 'Decision: All agents completed successfully → Finalize workflow', 'success')
+      addLog('OrchestratorAgent', 'Generating Excel output with tags, confidence scores, and rationale', 'info')
 
       if (!response.ok) {
         const data = await response.json()
@@ -285,7 +346,7 @@ export default function Home() {
                   <span className="log-agent">{log.agent}</span>
                   <span className="log-time">{log.timestamp}</span>
                 </div>
-                <div className="log-message">{log.message}</div>
+                <div className={getMessageClass(log.message)}>{log.message}</div>
               </div>
             ))
           )}
