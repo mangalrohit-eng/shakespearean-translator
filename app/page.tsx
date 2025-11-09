@@ -451,21 +451,21 @@ export default function Home() {
       </div>
 
       <div className={`agent-sidebar ${isSidebarOpen ? '' : 'collapsed'}`}>
+        <button 
+          className="sidebar-toggle-handle" 
+          onClick={toggleSidebar}
+          aria-label={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
+            {isSidebarOpen ? (
+              <path d="M9 18l6-6-6-6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            ) : (
+              <path d="M15 18l-6-6 6-6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            )}
+          </svg>
+        </button>
         <div className="sidebar-header">
           <h3>Agent Activity</h3>
-          <button 
-            className="sidebar-collapse-btn" 
-            onClick={toggleSidebar}
-            aria-label={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
-              {isSidebarOpen ? (
-                <path d="M9 18l6-6-6-6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              ) : (
-                <path d="M15 18l-6-6 6-6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              )}
-            </svg>
-          </button>
         </div>
         <div className="agent-logs">
           {agentLogs.length === 0 ? (
