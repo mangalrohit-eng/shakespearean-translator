@@ -9,7 +9,10 @@ import { Opportunity, AnalyzedOpportunity } from '../types'
  * Uses LLM to analyze each opportunity sequentially and tag with AI/Analytics/Data categories
  * This is the main AI-powered agent that does the intelligent tagging
  */
-export async function analyzerAgent(state: WorkflowState): Promise<Partial<WorkflowState>> {
+export async function analyzerAgent(
+  state: WorkflowState,
+  onUpdate?: (updatedState: Partial<WorkflowState>) => void
+): Promise<Partial<WorkflowState>> {
   const llm = new ChatOpenAI({
     modelName: 'gpt-4o-mini',
     temperature: 0.3,
@@ -106,6 +109,16 @@ Describe your analysis strategy in 2-3 sentences.`
         currentOpp: analyzed.opportunityName,
         timestamp: new Date().toISOString(),
       })
+
+      // Stream real-time update to frontend
+      if (onUpdate) {
+        onUpdate({
+          agentLogs: [...agentLogs],
+          progressUpdates: [...progressUpdates],
+          analyzedOpportunities: [...analyzedOpportunities],
+          currentStep: 'analyzing',
+        })
+      }
 
       // Inter-agent message every 5 opportunities
       if (current % 5 === 0 || current === totalOpportunities) {

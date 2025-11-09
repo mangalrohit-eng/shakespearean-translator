@@ -73,8 +73,17 @@ export async function executeSimpleWorkflow(
       return state
     }
 
-    // Step 6: Analyzer Agent
-    const analyzerResult = await analyzerAgent(state)
+    // Step 6: Analyzer Agent - with real-time streaming
+    const analyzerResult = await analyzerAgent(state, (partialState) => {
+      // Stream partial results as each opportunity is analyzed
+      if (onUpdate) {
+        const updatedState = {
+          ...state,
+          ...partialState
+        }
+        onUpdate(updatedState)
+      }
+    })
     state = { ...state, ...analyzerResult }
     if (onUpdate) onUpdate(state)
 

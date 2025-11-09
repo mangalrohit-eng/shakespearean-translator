@@ -172,8 +172,9 @@ export default function Home() {
                   }
                   setProgress((data.current / data.total) * 90)
                 } else if (data.type === 'result') {
-                  // Collect results for preview
+                  // Collect results for preview and show immediately
                   setResults(prev => [...prev, data.opportunity])
+                  setShowResults(true) // Show results as soon as first one arrives
                 } else if (data.type === 'complete') {
                   setProgress(100)
                   setProgressStatus('Complete!')
@@ -417,7 +418,7 @@ export default function Home() {
                 <>
                   <div className="results-summary">
                     <div className="summary-stat">
-                      <span className="stat-label">Total</span>
+                      <span className="stat-label">Total {loading && '(analyzing...)'}</span>
                       <span className="stat-value">{results.length}</span>
                     </div>
                     <div className="summary-stat ai">
@@ -449,7 +450,7 @@ export default function Home() {
                         {results.slice(0, 10).map((result, idx) => (
                           <tr key={idx}>
                             <td>{result.id}</td>
-                            <td>{result.dealName}</td>
+                            <td>{result.opportunityName}</td>
                             <td>
                               <div className="tags-cell">
                                 {result.tags.map((tag: string, i: number) => (
