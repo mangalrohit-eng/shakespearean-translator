@@ -37,6 +37,8 @@ export default function Home() {
   const [agents, setAgents] = useState<AgentUpdate[]>([])
   const [agentLogs, setAgentLogs] = useState<AgentLog[]>([])
   const [showSidebar, setShowSidebar] = useState(true)
+  const [results, setResults] = useState<any[]>([])
+  const [showResults, setShowResults] = useState(false)
   const abortControllerRef = useRef<AbortController | null>(null)
   const logEndRef = useRef<HTMLDivElement>(null)
 
@@ -117,6 +119,8 @@ export default function Home() {
     setProgress(null)
     setAgents([])
     setAgentLogs([])
+    setResults([])
+    setShowResults(false)
     addLog('Orchestrator', 'Initializing multi-agent analysis pipeline...', 'info', 'orchestrator')
 
     // Create abort controller for cancellation
@@ -196,10 +200,10 @@ export default function Home() {
             } else if (data.type === 'result') {
               results.push(data.opportunity)
             } else if (data.type === 'complete') {
-              // Store results in sessionStorage and navigate to results page
-              sessionStorage.setItem('analysisResults', JSON.stringify(results))
-              setSuccess('Analysis complete! Redirecting to results...')
-              setTimeout(() => router.push('/results'), 1000)
+              // Show results inline
+              setResults(results)
+              setShowResults(true)
+              setSuccess(`Analysis complete! ${results.length} opportunities analyzed.`)
               return
             } else if (data.type === 'error') {
               throw new Error(data.message)
@@ -324,50 +328,66 @@ export default function Home() {
       {error && <div className="error">{error}</div>}
       {success && <div className="success">{success}</div>}
 
-      <div
-        className={`upload-area ${file ? 'has-file' : ''}`}
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-      >
-        {!file ? (
-          <>
-            <div className="upload-icon">📊</div>
-            <p className="upload-text">Drag & drop your Excel file here</p>
-            <p className="upload-subtext">or</p>
-            <label htmlFor="file-input" className="file-label">
-              Browse Files
-            </label>
-            <input
-              id="file-input"
-              type="file"
-              accept=".xlsx,.xls"
-              onChange={handleFileChange}
-              style={{ display: 'none' }}
-            />
-            <p className="file-hint">Supports .xlsx and .xls files</p>
-          </>
-        ) : (
-          <div className="file-info">
-            <div className="file-icon">📄</div>
-            <div className="file-details">
-              <p className="file-name">{file.name}</p>
-              <p className="file-size">{(file.size / 1024).toFixed(2)} KB</p>
+      {/* Upload and Analyze Section */}
+      <div className="upload-analyze-section">
+        <div
+          className={`upload-area-compact ${file ? 'has-file' : ''}`}
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+        >
+          {!file ? (
+            <>
+              <div className="upload-icon-small">📊</div>
+              <div>
+                <p className="upload-text-small">Drag & drop or</p>
+                <label htmlFor="file-input" className="file-label-inline">
+                  Browse Files
+                </label>
+                <input
+                  id="file-input"
+                  type="file"
+                  accept=".xlsx,.xls"
+                  onChange={handleFileChange}
+                  style={{ display: 'none' }}
+                />
+              </div>
+            </>
+          ) : (
+            <div className="file-info-inline">
+              <div className="file-icon-small">✓</div>
+              <div className="file-details-inline">
+                <p className="file-name-small">{file.name}</p>
+                <p className="file-size-small">{(file.size / 1024).toFixed(2)} KB</p>
+              </div>
+              <button className="remove-btn-small" onClick={handleClear}>
+                ✕
+              </button>
             </div>
-            <button className="remove-btn" onClick={handleClear}>
-              ✕
+          )}
+        </div>
+
+        <div className="analyze-button-section">
+          {loading ? (
+            <button
+              className="stop-btn-inline"
+              onClick={handleStop}
+            >
+              ⏹️ Stop
             </button>
-          </div>
-        )}
+          ) : (
+            <button
+              className="analyze-btn-inline"
+              onClick={handleAnalyze}
+              disabled={!file}
+            >
+              🚀 Analyze
+            </button>
+          )}
+        </div>
       </div>
 
-      <div className="info-box">
-        <h3>📋 What this analyzer does:</h3>
-        <ul>
-          <li>✅ Filters opportunities from <strong>US-Comms & Media</strong> client group</li>
-          <li>✅ Analyzes opportunity names for AI, Analytics, and Data keywords</li>
-          <li>✅ Provides detailed rationale for each tagging decision</li>
-          <li>✅ Exports results to a new Excel file with all tags and explanations</li>
-        </ul>
+      <div className="info-box-compact">
+        <strong>How it works:</strong> Filters US-Comms & Media opportunities • AI-powered tagging • Exports results
       </div>
 
       {loading && (
@@ -424,24 +444,93 @@ export default function Home() {
         </>
       )}
 
-      <div className="button-container">
-        {loading ? (
-          <button
-            className="stop-btn"
-            onClick={handleStop}
-          >
-            ⏹️ Stop Processing
-          </button>
-        ) : (
-          <button
-            className="analyze-btn"
-            onClick={handleAnalyze}
-            disabled={!file}
-          >
-            🚀 Analyze Opportunities
-          </button>
-        )}
-      </div>
+      {/* Results Section */}
+      {showResults && results.length > 0 && (
+        <div className="results-section">
+          <div className="results-header-inline">
+            <h2>📊 Analysis Results ({results.length} opportunities)</h2>
+            <button 
+              className="download-btn-inline"
+              onClick={async () => {
+                const response = await fetch('/api/export', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ results }),
+                })
+                const blob = await response.blob()
+                const url = window.URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = `analysis-${new Date().toISOString().split('T')[0]}.xlsx`
+                a.click()
+              }}
+            >
+              💾 Download Excel
+            </button>
+          </div>
+
+          <div className="results-stats-inline">
+            <div className="stat-inline">
+              <span className="stat-label-inline">AI:</span>
+              <span className="stat-value-inline">{results.filter(r => r.tags.includes('AI')).length}</span>
+            </div>
+            <div className="stat-inline">
+              <span className="stat-label-inline">Analytics:</span>
+              <span className="stat-value-inline">{results.filter(r => r.tags.includes('Analytics')).length}</span>
+            </div>
+            <div className="stat-inline">
+              <span className="stat-label-inline">Data:</span>
+              <span className="stat-value-inline">{results.filter(r => r.tags.includes('Data')).length}</span>
+            </div>
+            <div className="stat-inline">
+              <span className="stat-label-inline">Avg Confidence:</span>
+              <span className="stat-value-inline">
+                {Math.round(results.reduce((sum, r) => sum + r.confidence, 0) / results.length)}%
+              </span>
+            </div>
+          </div>
+
+          <div className="results-table-inline">
+            <table>
+              <thead>
+                <tr>
+                  <th>Opportunity</th>
+                  <th>Tags</th>
+                  <th>Confidence</th>
+                  <th>Rationale</th>
+                </tr>
+              </thead>
+              <tbody>
+                {results.slice(0, 10).map((result, idx) => (
+                  <tr key={idx}>
+                    <td className="opp-name-inline">{result.oppName}</td>
+                    <td>
+                      <div className="tags-inline">
+                        {result.tags.length > 0 ? (
+                          result.tags.map((tag: string) => (
+                            <span key={tag} className={`tag tag-${tag.toLowerCase()}`}>
+                              {tag}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="tag tag-none">None</span>
+                        )}
+                      </div>
+                    </td>
+                    <td>{result.confidence}%</td>
+                    <td className="rationale-inline">{result.rationale}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {results.length > 10 && (
+              <div className="results-footer-inline">
+                Showing 10 of {results.length} opportunities. Download Excel to see all.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
           <footer>
             <p>Powered by OpenAI GPT-4o-mini • AI-driven opportunity analysis</p>
