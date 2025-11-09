@@ -56,7 +56,7 @@ export async function emailComposerAgent(
     const totalValue = opportunities.reduce((sum, o) => sum + (o.total || 0), 0)
     const avgConfidence = opportunities.reduce((sum, o) => sum + (o.confidence || 0), 0) / opportunities.length
 
-    const prompt = `You are an AI agent writing a professional account review email for "${account}".
+    const prompt = `You are writing a brief, direct email about D&AI opportunities for account "${account}".
 
 Context:
 - Account: ${account}
@@ -64,25 +64,27 @@ Context:
 - AI-focused: ${aiOpps.length}
 - Analytics-focused: ${analyticsOpps.length}
 - Data-focused: ${dataOpps.length}
-${totalValue > 0 ? `- Total Deal Value: $${totalValue.toLocaleString()}` : ''}
-- Average Confidence Score: ${Math.round(avgConfidence * 100)}%
 
-Opportunities Details:
-${opportunities.slice(0, 10).map(o => `• ${o.opportunityName} (${o.tags.join(', ')}) - Confidence: ${Math.round(o.confidence * 100)}%${o.dealDescription ? ` - ${o.dealDescription.substring(0, 80)}...` : ''}`).join('\n')}
-${opportunities.length > 10 ? `\n... and ${opportunities.length - 10} more opportunities` : ''}
+Opportunities with details:
+${opportunities.map(o => `• ${o.opportunityName} → ${o.tags.join(', ')} (${Math.round(o.confidence * 100)}% confidence)${o.dealDescription ? ` - ${o.dealDescription}` : ''}`).join('\n')}
 
-Write a professional email with the following structure:
-1. **Executive Summary**: Brief overview with key metrics for this account
-2. **Opportunity Breakdown**: Organize by AI/Analytics/Data categories
-3. **Top Priorities**: Highlight the 3-5 highest-confidence opportunities
-4. **Next Steps**: Clear action items for the account team
+Write a SHORT, DIRECT, CASUAL email with this structure:
+
+Opening: "Found ${opportunities.length} opportunities that are likely Data & AI deals."
+
+List: Show each opportunity with:
+- Opportunity name
+- Suggested tags (${aiOpps.length > 0 ? 'AI' : ''}${analyticsOpps.length > 0 ? ', Analytics' : ''}${dataOpps.length > 0 ? ', Data' : ''})
+- Brief description if available
+
+Closing: "Can you please take a look and tag them appropriately in MMS? Let me know if you need help."
 
 Requirements:
-- Professional tone, concise and executive-ready
-- Use HTML formatting for better readability (<h3>, <p>, <ul>, <strong>, <table>)
-- Include a summary table of top opportunities
-- Make it actionable and data-driven
-- Keep it under 800 words
+- Keep it brief and conversational, NOT formal
+- Use simple HTML formatting (<p>, <ul>, <li>, <strong>)
+- Include a simple list or table of opportunities
+- Direct tone, like a quick email from a colleague
+- Maximum 400 words
 
 Write the email body (HTML format) without subject line:`
 
@@ -112,51 +114,25 @@ Write the email body (HTML format) without subject line:`
     } catch (llmError) {
       console.error('LLM email generation failed, using template:', llmError)
       
-      // Fallback to template if LLM fails
+      // Fallback to simple template if LLM fails
       return `
-        <h3>Account Review: ${account}</h3>
-        <p>This report summarizes ${opportunities.length} D&AI opportunities identified for ${account} from the Communications & Media portfolio.</p>
+        <p>Found ${opportunities.length} opportunities that are likely Data & AI deals:</p>
         
-        <h3>Key Metrics</h3>
-        <ul>
-          <li><strong>Total Opportunities:</strong> ${opportunities.length}</li>
-          <li><strong>AI-focused:</strong> ${aiOpps.length}</li>
-          <li><strong>Analytics-focused:</strong> ${analyticsOpps.length}</li>
-          <li><strong>Data-focused:</strong> ${dataOpps.length}</li>
-          <li><strong>Total Deal Value:</strong> $${totalValue.toLocaleString()}</li>
-          <li><strong>Average Confidence:</strong> ${Math.round(avgConfidence * 100)}%</li>
+        <ul style="line-height: 1.8;">
+          ${opportunities.map(o => `
+            <li>
+              <strong>${o.opportunityName}</strong> → ${o.tags.length > 0 ? o.tags.join(', ') : 'Untagged'} 
+              (${Math.round(o.confidence * 100)}% confidence)
+              ${o.dealDescription ? `<br/><span style="color: rgba(255, 255, 255, 0.7); font-size: 0.9em;">${o.dealDescription}</span>` : ''}
+            </li>
+          `).join('')}
         </ul>
 
-        <h3>Top Opportunities</h3>
-        <table class="email-table" style="width: 100%; border-collapse: collapse; margin: 16px 0;">
-          <thead>
-            <tr style="background: rgba(161, 0, 255, 0.15);">
-              <th style="padding: 12px; text-align: left; border-bottom: 2px solid rgba(161, 0, 255, 0.4);">Opportunity</th>
-              <th style="padding: 12px; text-align: left; border-bottom: 2px solid rgba(161, 0, 255, 0.4);">Tags</th>
-              <th style="padding: 12px; text-align: left; border-bottom: 2px solid rgba(161, 0, 255, 0.4);">Confidence</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${opportunities.slice(0, 10).map(o => `
-              <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
-                <td style="padding: 12px;">${o.oppName}</td>
-                <td style="padding: 12px;">${o.tags.join(', ')}</td>
-                <td style="padding: 12px;">${Math.round(o.confidence * 100)}%</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-        ${opportunities.length > 10 ? `<p><em>... and ${opportunities.length - 10} more opportunities in the full analysis</em></p>` : ''}
-
-        <h3>Next Steps</h3>
-        <ul>
-          <li>Review the attached Excel file for complete analysis</li>
-          <li>Prioritize high-confidence opportunities for immediate action</li>
-          <li>Coordinate with delivery teams on resource allocation</li>
-          <li>Schedule follow-up discussions on strategic opportunities</li>
-        </ul>
-
-        <p>Best regards,<br/>D&AI Analysis Team</p>
+        <p>Can you please take a look and tag them appropriately in MMS? Let me know if you need help.</p>
+        
+        <p style="margin-top: 20px; color: rgba(255, 255, 255, 0.6); font-size: 0.85em;">
+          Summary: ${aiOpps.length} AI, ${analyticsOpps.length} Analytics, ${dataOpps.length} Data opportunities
+        </p>
       `
     }
   }
@@ -178,7 +154,7 @@ Write the email body (HTML format) without subject line:`
     emails.push({
       captain: account, // Keep field name for compatibility, but it's actually account name
       tag: primaryTag,
-      subject: `D&AI Opportunity Review - ${account} (${opportunities.length} Opportunities)`,
+      subject: `${account} - ${opportunities.length} D&AI Opportunities to Tag in MMS`,
       body: emailBody,
       opportunities
     })
