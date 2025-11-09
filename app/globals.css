@@ -2056,6 +2056,28 @@ footer {
   background: var(--accenture-dark-purple);
 }
 
+.new-analysis-btn {
+  background: white;
+  color: var(--accenture-purple);
+  border: 2px solid var(--accenture-purple);
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.new-analysis-btn:hover {
+  background: var(--accenture-purple);
+  color: white;
+}
+
 .results-stats-inline {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
