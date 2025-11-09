@@ -774,14 +774,39 @@ h1 {
 }
 
 .analyze-btn-inline {
-  background: var(--accenture-purple);
+  background: linear-gradient(135deg, var(--accenture-purple) 0%, #8B00CC 100%);
   color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.analyze-btn-inline::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.analyze-btn-inline:hover::before {
+  width: 300px;
+  height: 300px;
 }
 
 .analyze-btn-inline:hover:not(:disabled) {
-  background: var(--accenture-dark-purple);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #8B00CC 0%, var(--accenture-dark-purple) 100%);
+  box-shadow: 0 6px 20px rgba(161, 0, 255, 0.35);
+  transform: translateY(-2px);
+}
+
+.analyze-btn-inline:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(161, 0, 255, 0.25);
 }
 
 .analyze-btn-inline:disabled {
@@ -789,6 +814,7 @@ h1 {
   color: var(--accenture-gray);
   cursor: not-allowed;
   box-shadow: none;
+  opacity: 0.6;
 }
 
 .stop-btn-inline {
@@ -1141,18 +1167,58 @@ h1 {
   color: var(--accenture-purple);
 }
 
+.progress-bar-wrapper {
+  margin-top: 16px;
+}
+
 .progress-bar {
-  height: 8px;
-  background: var(--accenture-light-gray);
-  border-radius: 4px;
+  height: 32px;
+  background: linear-gradient(135deg, #F0F0F0 0%, #FAFAFA 100%);
+  border-radius: 16px;
   overflow: hidden;
-  margin-bottom: 16px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid #E0E0E0;
 }
 
 .progress-fill {
   height: 100%;
-  background: var(--accenture-purple);
-  transition: width 0.3s ease;
+  background: linear-gradient(135deg, var(--accenture-purple) 0%, #8B00CC 100%);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-fill::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.progress-fill-text {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  z-index: 1;
 }
 
 .progress-details {
@@ -2848,20 +2914,45 @@ footer {
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
-  background: var(--accenture-purple);
+  background: linear-gradient(135deg, var(--accenture-purple) 0%, #8B00CC 100%);
   color: white;
   border: none;
   border-radius: 4px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: inherit;
+  position: relative;
+  overflow: hidden;
+}
+
+.download-excel-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  transform: translate(-50%, -50%);
+  transition: width 0.5s, height 0.5s;
+}
+
+.download-excel-btn:hover::after {
+  width: 200px;
+  height: 200px;
 }
 
 .download-excel-btn:hover {
-  background: var(--accenture-dark-purple);
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #8B00CC 0%, var(--accenture-dark-purple) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(161, 0, 255, 0.4);
+}
+
+.download-excel-btn:active {
+  transform: translateY(0);
   box-shadow: 0 2px 8px rgba(161, 0, 255, 0.3);
 }
 
@@ -2869,6 +2960,12 @@ footer {
   stroke: white;
   width: 16px;
   height: 16px;
+  z-index: 1;
+  transition: transform 0.3s;
+}
+
+.download-excel-btn:hover svg {
+  transform: translateY(2px);
 }
 
 /* Results Summary Stats */

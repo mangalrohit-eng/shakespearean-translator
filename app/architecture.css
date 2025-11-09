@@ -244,32 +244,37 @@
   top: 50%;
   left: 0;
   transform: translateY(-50%);
-  background: var(--accenture-purple);
+  background: linear-gradient(135deg, var(--accenture-purple) 0%, #8B00CC 100%);
   color: white;
-  padding: 3px 8px;
-  border-radius: 3px;
-  font-size: 0.7rem;
-  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.65rem;
+  font-weight: 700;
   white-space: nowrap;
-  box-shadow: 0 1px 4px rgba(161, 0, 255, 0.3);
-  letter-spacing: 0.3px;
-  opacity: 0.85;
+  box-shadow: 0 2px 8px rgba(161, 0, 255, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  letter-spacing: 0.8px;
+  opacity: 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 @keyframes flowPacket {
   0% {
-    left: 0;
+    left: -10%;
     opacity: 0;
+    transform: translateY(-50%) scale(0.8);
   }
-  15% {
-    opacity: 0.7;
+  10% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
   }
-  85% {
-    opacity: 0.7;
+  90% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
   }
   100% {
-    left: calc(100% - 60px);
+    left: 110%;
     opacity: 0;
+    transform: translateY(-50%) scale(0.8);
   }
 }
 

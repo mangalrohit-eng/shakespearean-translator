@@ -338,26 +338,27 @@ export default function Home() {
             <div className="progress-container">
               <div className="progress-header">
                 <span className="progress-status-text">{progressStatus}</span>
-                <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
-                  <span className="progress-percentage">{progress}%</span>
-                  <button 
-                    className="stop-btn" 
-                    onClick={handleStop}
-                    aria-label="Stop analysis"
-                    title="Stop analysis"
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
-                      <rect x="6" y="6" width="12" height="12" strokeWidth="2" fill="currentColor"/>
-                    </svg>
-                    Stop
-                  </button>
-                </div>
+                <button 
+                  className="stop-btn" 
+                  onClick={handleStop}
+                  aria-label="Stop analysis"
+                  title="Stop analysis"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14">
+                    <rect x="6" y="6" width="12" height="12" strokeWidth="2" fill="currentColor"/>
+                  </svg>
+                  Stop
+                </button>
               </div>
-              <div className="progress-bar">
-                <div 
-                  className="progress-fill" 
-                  style={{ width: `${progress}%` }}
-                />
+              <div className="progress-bar-wrapper">
+                <div className="progress-bar">
+                  <div 
+                    className="progress-fill" 
+                    style={{ width: `${progress}%` }}
+                  >
+                    <span className="progress-fill-text">{Math.round(progress)}%</span>
+                  </div>
+                </div>
               </div>
             </div>
           )}
