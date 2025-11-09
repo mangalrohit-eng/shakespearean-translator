@@ -33,6 +33,13 @@ export interface AnalyzedOpportunity extends Opportunity {
   confidence: number
 }
 
+export interface CustomInstruction {
+  id: string
+  text: string
+  category: 'AI' | 'Analytics' | 'Data'
+  createdAt: string
+}
+
 export interface WorkflowState {
   rawData: ExcelRow[]
   filteredOpportunities: Opportunity[]

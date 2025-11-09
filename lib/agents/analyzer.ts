@@ -1,5 +1,5 @@
 import OpenAI from 'openai'
-import { Opportunity, AnalyzedOpportunity } from '../types'
+import { Opportunity, AnalyzedOpportunity, CustomInstruction } from '../types'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -9,13 +9,6 @@ interface AnalysisResult {
   tags: string[]
   rationale: string
   confidence: number
-}
-
-interface CustomInstruction {
-  id: string
-  text: string
-  category: 'AI' | 'Analytics' | 'Data'
-  createdAt: string
 }
 
 function buildAnalysisPrompt(opportunity: Opportunity, customInstructions?: CustomInstruction[]): string {
