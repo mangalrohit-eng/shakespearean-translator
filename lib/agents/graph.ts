@@ -1,4 +1,4 @@
-import { StateGraph, END, START, MemorySaver } from '@langchain/langgraph'
+import { StateGraph, END, MemorySaver, Annotation } from '@langchain/langgraph'
 import { WorkflowState, createInitialState } from './state'
 import { excelReaderAgent } from './excel-reader-agent'
 import { filterAgent } from './filter-agent'
@@ -45,68 +45,36 @@ function shouldContinueAfterAnalyzer(state: WorkflowState): string {
   return END
 }
 
+// Define state annotation for LangGraph
+const StateAnnotation = Annotation.Root({
+  fileBuffer: Annotation<ArrayBuffer | undefined>,
+  customInstructions: Annotation<any[] | undefined>,
+  rawData: Annotation<any[]>,
+  filteredOpportunities: Annotation<any[]>,
+  analyzedOpportunities: Annotation<any[]>,
+  currentStep: Annotation<string>,
+  totalProcessed: Annotation<number>,
+  errors: Annotation<string[]>,
+  messages: Annotation<any[]>,
+  progressUpdates: Annotation<any[]>,
+  agentLogs: Annotation<any[]>,
+})
+
 /**
  * Create the StateGraph workflow
  * This defines the multi-agent workflow with conditional routing
  */
 export function createWorkflowGraph() {
-  // Create the graph with our state schema
-  const workflow = new StateGraph<WorkflowState>({
-    channels: {
-      fileBuffer: {
-        value: (x?: ArrayBuffer, y?: ArrayBuffer) => y ?? x,
-        default: () => undefined,
-      },
-      customInstructions: {
-        value: (x?: any[], y?: any[]) => y ?? x,
-        default: () => undefined,
-      },
-      rawData: {
-        value: (x: any[], y?: any[]) => y ?? x,
-        default: () => [],
-      },
-      filteredOpportunities: {
-        value: (x: any[], y?: any[]) => y ?? x,
-        default: () => [],
-      },
-      analyzedOpportunities: {
-        value: (x: any[], y?: any[]) => y ?? x,
-        default: () => [],
-      },
-      currentStep: {
-        value: (x: string, y?: string) => y ?? x,
-        default: () => 'start',
-      },
-      totalProcessed: {
-        value: (x: number, y?: number) => y ?? x,
-        default: () => 0,
-      },
-      errors: {
-        value: (x: string[], y?: string[]) => [...x, ...(y || [])],
-        default: () => [],
-      },
-      messages: {
-        value: (x: any[], y?: any[]) => [...x, ...(y || [])],
-        default: () => [],
-      },
-      progressUpdates: {
-        value: (x: any[], y?: any[]) => [...x, ...(y || [])],
-        default: () => [],
-      },
-      agentLogs: {
-        value: (x: any[], y?: any[]) => [...x, ...(y || [])],
-        default: () => [],
-      },
-    },
-  })
+  // Create the graph with state annotation
+  const workflow = new StateGraph(StateAnnotation)
 
   // Add agent nodes
   workflow.addNode('excelReader', excelReaderAgent)
   workflow.addNode('filter', filterAgent)
   workflow.addNode('analyzer', analyzerAgent)
 
-  // Set entry point - connect START to first agent
-  workflow.addEdge(START, 'excelReader')
+  // Set entry point
+  workflow.addEdge('__start__', 'excelReader')
 
   // Add conditional edges (routing)
   workflow.addConditionalEdges('excelReader', shouldContinueAfterExcelRead, {
