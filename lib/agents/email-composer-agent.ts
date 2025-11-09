@@ -20,8 +20,24 @@ export async function emailComposerAgent(
     }
   })
 
+  // Filter to only include opportunities with actual tags (AI, Analytics, or Data)
+  const taggedOpportunities = state.analyzedOpportunities.filter(opp => 
+    opp.tags && opp.tags.length > 0
+  )
+
+  onUpdate?.({
+    agent: 'EmailComposerAgent',
+    action: `Filtered to ${taggedOpportunities.length} opportunities with D&AI tags (excluded ${state.analyzedOpportunities.length - taggedOpportunities.length} untagged)`,
+    status: 'active',
+    details: {
+      totalOpportunities: state.analyzedOpportunities.length,
+      taggedOpportunities: taggedOpportunities.length,
+      untaggedOpportunities: state.analyzedOpportunities.length - taggedOpportunities.length
+    }
+  })
+
   // Group opportunities by Account Name
-  const opportunitiesByAccount = state.analyzedOpportunities.reduce((acc, opp) => {
+  const opportunitiesByAccount = taggedOpportunities.reduce((acc, opp) => {
     const account = opp.accountName || 'Unknown Account'
     if (!acc[account]) {
       acc[account] = []
@@ -71,7 +87,7 @@ ${opportunities.map(o => `• ID: ${o.id} | ${o.opportunityName} → ${o.tags.jo
 
 Write a SHORT, DIRECT, CASUAL email with this structure:
 
-Opening: "Found ${opportunities.length} opportunities that are likely Data & AI deals."
+Opening: "Found ${opportunities.length} opportunities that are likely Data & AI deals." (Note: Only includes opportunities that were identified as AI, Analytics, or Data - untagged opportunities are excluded.)
 
 List: Show each opportunity with:
 - **Opportunity ID** (important for MMS tagging)
@@ -157,9 +173,12 @@ Write the email body (HTML format) without subject line:`
     }
   }
 
-  // Generate emails for each account
+  // Generate emails for each account (only those with tagged opportunities)
   const emails = []
   for (const [account, opportunities] of Object.entries(opportunitiesByAccount)) {
+    // Skip if no opportunities (safety check)
+    if (opportunities.length === 0) continue
+
     const emailBody = await generateEmailContent(account, opportunities)
     
     // Get primary tag for this account's opportunities
@@ -180,13 +199,16 @@ Write the email body (HTML format) without subject line:`
     })
   }
 
+  const totalTaggedOpps = emails.reduce((sum, email) => sum + email.opportunities.length, 0)
+
   onUpdate?.({
     agent: 'EmailComposerAgent',
-    action: `✓ Successfully composed ${emails.length} personalized email(s) grouped by account`,
+    action: `✓ Successfully composed ${emails.length} personalized email(s) for ${totalTaggedOpps} tagged opportunities`,
     status: 'complete',
     details: {
       totalEmailsGenerated: emails.length,
-      accounts: accountNames,
+      totalTaggedOpportunities: totalTaggedOpps,
+      accountsWithTaggedOpps: emails.map(e => e.captain),
       timestamp: new Date().toISOString()
     }
   })
