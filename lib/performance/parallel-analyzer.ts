@@ -124,7 +124,7 @@ export class ParallelAnalyzer {
         const batch = pending.splice(0, BATCH_SIZE)
         
         // Show which opportunities are being analyzed
-        const batchNames = batch.slice(0, 2).map(o => `"${o.oppName.substring(0, 50)}${o.oppName.length > 50 ? '...' : ''}"`).join(', ')
+        const batchNames = batch.slice(0, 2).map(o => `"${o.opportunityName.substring(0, 50)}${o.opportunityName.length > 50 ? '...' : ''}"`).join(', ')
         updateAgent('Analyzer Agent', `Analyzing: ${batchNames}${batch.length > 2 ? ` + ${batch.length - 2} more` : ''}`, 'active')
 
         // Check cache first
@@ -158,7 +158,7 @@ export class ParallelAnalyzer {
         })
 
         // Update progress
-        const currentOpp = batchResults[batchResults.length - 1]?.oppName || ''
+        const currentOpp = batchResults[batchResults.length - 1]?.opportunityName || ''
         onProgress(processed, total, currentOpp)
 
         // Show specific tagging results
@@ -168,7 +168,7 @@ export class ParallelAnalyzer {
           const shortRationale = sample.rationale.substring(0, 80).replace(/\n/g, ' ')
           updateAgent(
             'Analyzer Agent', 
-            `✓ Tagged ${tagged.length}/${batchResults.length} in batch. Example: "${sample.oppName.substring(0, 40)}..." → ${sample.tags.join(', ')} (${shortRationale}...)`, 
+            `✓ Tagged ${tagged.length}/${batchResults.length} in batch. Example: "${sample.opportunityName.substring(0, 40)}..." → ${sample.tags.join(', ')} (${shortRationale}...)`, 
             'complete'
           )
         } else {

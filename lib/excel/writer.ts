@@ -4,11 +4,12 @@ import { AnalyzedOpportunity } from '../types'
 export function createExcelOutput(opportunities: AnalyzedOpportunity[]): Buffer {
   const outputData = opportunities.map(opp => ({
     'Opportunity ID': opp.id,
-    'Client Name': opp.clientName,
-    'Opportunity Name': opp.oppName,
-    'Client Group': opp.clientGroup,
-    'Deal Size': opp.dealSize,
-    'Total': opp.total,
+    'Account Name': opp.accountName,
+    'Opportunity Name': opp.opportunityName,
+    'Deal Description': opp.dealDescription || '',
+    'Industry': opp.industryName || '',
+    'Deal Size': opp.dealSize || '',
+    'Total': opp.total || '',
     'AI Tag': opp.tags.includes('AI') ? 'Yes' : 'No',
     'Analytics Tag': opp.tags.includes('Analytics') ? 'Yes' : 'No',
     'Data Tag': opp.tags.includes('Data') ? 'Yes' : 'No',

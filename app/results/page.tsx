@@ -46,7 +46,7 @@ export default function ResultsPage() {
     avgConfidence: results.length > 0 
       ? Math.round(results.reduce((sum, r) => sum + r.confidence, 0) / results.length)
       : 0,
-    totalValue: results.reduce((sum, r) => sum + r.total, 0),
+    totalValue: results.reduce((sum, r) => sum + (r.total || 0), 0),
   }
 
   const handleEdit = (id: string, currentTags: string[]) => {
@@ -361,9 +361,9 @@ export default function ResultsPage() {
           <tbody>
             {results.map((result) => (
               <tr key={result.id}>
-                <td className="opp-name">{result.oppName}</td>
-                <td>{result.clientName}</td>
-                <td>{result.dealSize}</td>
+                <td className="opp-name">{result.opportunityName}</td>
+                <td>{result.accountName}</td>
+                <td>{result.dealSize || '-'}</td>
                 <td>
                   {editingId === result.id ? (
                     <div className="tag-editor">

@@ -34,9 +34,9 @@ export function generateInsights(opportunities: AnalyzedOpportunity[]): Analytic
   const clientMap = new Map<string, ClientInsight>()
   
   opportunities.forEach(opp => {
-    if (!clientMap.has(opp.clientName)) {
-      clientMap.set(opp.clientName, {
-        clientName: opp.clientName,
+    if (!clientMap.has(opp.accountName)) {
+      clientMap.set(opp.accountName, {
+        clientName: opp.accountName,
         total: 0,
         aiCount: 0,
         analyticsCount: 0,
@@ -45,7 +45,7 @@ export function generateInsights(opportunities: AnalyzedOpportunity[]): Analytic
       })
     }
     
-    const client = clientMap.get(opp.clientName)!
+    const client = clientMap.get(opp.accountName)!
     client.total++
     
     if (opp.tags.includes('AI')) client.aiCount++
@@ -99,7 +99,7 @@ export function generateInsights(opportunities: AnalyzedOpportunity[]): Analytic
   const stopWords = ['the', 'and', 'for', 'with', 'from', 'to', 'in', 'on', 'at', 'of', 'a', 'an']
   
   opportunities.forEach(opp => {
-    const words = opp.oppName.toLowerCase()
+    const words = opp.opportunityName.toLowerCase()
       .replace(/[^a-z0-9\s]/g, ' ')
       .split(/\s+/)
       .filter(w => w.length > 3 && !stopWords.includes(w))
