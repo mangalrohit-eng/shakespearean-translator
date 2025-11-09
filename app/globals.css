@@ -3414,6 +3414,27 @@ select:focus-visible {
   height: 20px;
 }
 
+.sidebar-toggle-label {
+  position: absolute;
+  left: 100%;
+  margin-left: 8px;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.sidebar-toggle-handle:hover .sidebar-toggle-label {
+  opacity: 1;
+}
+
+.agent-sidebar.collapsed .sidebar-toggle-handle .sidebar-toggle-label {
+  opacity: 1;
+}
+
 /* Help Tooltip Trigger */
 .help-tooltip-trigger {
   display: inline-flex;
@@ -3625,14 +3646,14 @@ select:focus-visible {
 /* Email View */
 .email-view {
   margin-top: 24px;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(10, 10, 20, 0.6);
   border: 1px solid rgba(161, 0, 255, 0.2);
   border-radius: 8px;
   overflow: hidden;
 }
 
 .email-header-info {
-  background: rgba(161, 0, 255, 0.05);
+  background: rgba(161, 0, 255, 0.1);
   padding: 20px;
   border-bottom: 1px solid rgba(161, 0, 255, 0.2);
 }
@@ -3649,25 +3670,27 @@ select:focus-visible {
 }
 
 .email-label {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.6);
   font-weight: 600;
   min-width: 70px;
 }
 
 .email-value {
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.95);
   flex: 1;
 }
 
 .email-body {
   padding: 32px;
-  color: rgba(255, 255, 255, 0.9);
+  background: rgba(20, 20, 30, 0.8);
+  color: rgba(255, 255, 255, 0.95);
   line-height: 1.8;
 }
 
 /* Email Content Styles */
 .email-content p {
   margin: 0 0 16px 0;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .email-content h3 {
@@ -3683,10 +3706,12 @@ select:focus-visible {
 .email-content ol {
   margin: 0 0 16px 0;
   padding-left: 24px;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .email-content li {
   margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .email-content li strong {
@@ -3717,6 +3742,7 @@ select:focus-visible {
 .email-content .email-table td {
   padding: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .email-content .email-table tbody tr:hover {

@@ -524,6 +524,7 @@ export default function Home() {
           className="sidebar-toggle-handle" 
           onClick={toggleSidebar}
           aria-label={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+          title={isSidebarOpen ? 'Hide Agent Activity' : 'Show Agent Activity'}
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
             {isSidebarOpen ? (
@@ -532,6 +533,7 @@ export default function Home() {
               <path d="M15 18l-6-6 6-6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             )}
           </svg>
+          <span className="sidebar-toggle-label">{isSidebarOpen ? 'Hide' : 'Show'}</span>
         </button>
         <div className="sidebar-header">
           <h3>Agent Activity</h3>

@@ -61,7 +61,7 @@ export default function ArchitecturePage() {
       </div>
 
       {/* Main Architecture - Above the Fold */}
-      <div className="architecture-flow">
+      <div className="architecture-flow" style={{display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gridTemplateRows: 'auto auto', gap: '20px 40px', maxWidth: '1400px', margin: '40px auto'}}>
         
         {/* START Node */}
         <div className="agent-node-compact start">
