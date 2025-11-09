@@ -18,13 +18,14 @@ export function filterCommsMedia(data: ExcelRow[]): Opportunity[] {
              clientGroup.toLowerCase().includes('media')
     })
     .map(row => ({
-      id: row.ID || '',
-      clientName: row['Client Name'] || '',
-      oppName: row['Opp Name'] || '',
-      clientGroup: row['Client Group'] || '',
+      id: row.ID || row['Opportunity ID'] || '',
+      accountName: row['Account Name'] || row['Client Name'] || '',
+      opportunityName: row['Opportunity Name'] || row['Opp Name'] || '',
+      dealDescription: row['Deal Description'] || row['Description'] || '',
+      industryName: row['Industry'] || row['Client Group'] || '',
       dealSize: row['Deal Size'] || '',
       total: row.Total || 0,
-      daiCaptain: row['DAI Captain'] || 'Unassigned',
+      rawData: row,
     }))
 }
 

@@ -57,7 +57,7 @@ Reason through this task and describe your filtering strategy in 2-3 sentences.`
     // Get sample opportunity names for detailed reporting
     const sampleOpps = filteredOpportunities
       .slice(0, 3)
-      .map(o => `"${o.oppName}"`)
+      .map(o => `"${o.opportunityName}"`)
       .join(', ')
 
     // Log completion with details
@@ -70,7 +70,7 @@ Reason through this task and describe your filtering strategy in 2-3 sentences.`
         totalInput: state.rawData.length,
         totalFiltered: filteredOpportunities.length,
         filterRate: `${Math.round((filteredOpportunities.length / state.rawData.length) * 100)}%`,
-        samples: filteredOpportunities.slice(0, 5).map(o => o.oppName),
+        samples: filteredOpportunities.slice(0, 5).map(o => o.opportunityName),
       },
     })
 
