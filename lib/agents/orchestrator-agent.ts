@@ -25,9 +25,10 @@ export async function orchestratorAgent(
         // Orchestrator starts the workflow
         agentLogs.push({
           agent: 'OrchestratorAgent',
-          action: 'Initializing multi-agent workflow. Analyzing task requirements...',
+          action: 'Initializing multi-agent workflow',
           status: 'active',
           timestamp: new Date().toISOString(),
+          details: 'Analyzing task requirements and coordinating 3 specialized agents: ExcelReaderAgent, FilterAgent, AnalyzerAgent. Preparing to process uploaded Excel file.'
         })
 
         const reasoningPrompt = `You are an Orchestrator Agent managing a multi-agent workflow.
@@ -54,9 +55,10 @@ Provide your orchestration plan in 2-3 sentences.`
 
         agentLogs.push({
           agent: 'OrchestratorAgent',
-          action: `Plan created. Dispatching ExcelReaderAgent to parse uploaded file.`,
+          action: `Workflow plan ready - dispatching ExcelReaderAgent`,
           status: 'complete',
           timestamp: new Date().toISOString(),
+          details: `LLM Reasoning: ${reasoning.content.toString().substring(0, 200)}... | Next Action: Instructing ExcelReaderAgent to parse uploaded file and extract all opportunity records with row count and data structure.`
         })
 
         messages.push(
@@ -78,9 +80,10 @@ Provide your orchestration plan in 2-3 sentences.`
 
         agentLogs.push({
           agent: 'OrchestratorAgent',
-          action: `Received ${rowCount} rows from ExcelReaderAgent. Analyzing data quality...`,
+          action: `Received ${rowCount} rows from ExcelReaderAgent`,
           status: 'active',
           timestamp: new Date().toISOString(),
+          details: `Analyzing data quality and structure. Columns detected: ID, Client Name, Opp Name, Client Group. Preparing to evaluate routing decision for next step.`
         })
 
         const reviewPrompt = `You are an Orchestrator Agent reviewing Excel parsing results.

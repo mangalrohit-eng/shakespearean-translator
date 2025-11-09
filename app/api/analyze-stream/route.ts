@@ -60,7 +60,8 @@ export async function POST(request: Request) {
                   type: 'agent',
                   agent: log.agent,
                   action: log.action,
-                  status: log.status
+                  status: log.status,
+                  details: log.details
                 })}\n\n`)
               )
             })

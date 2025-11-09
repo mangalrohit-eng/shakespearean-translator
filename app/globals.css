@@ -103,6 +103,9 @@ body {
   position: relative;
   padding: 4px 0;
   letter-spacing: 0;
+  background: none;
+  border: none;
+  font-family: inherit;
 }
 
 .accenture-nav-link:hover {
@@ -319,6 +322,18 @@ body {
   font-size: 0.875rem;
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.85);
+}
+
+.log-details {
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.65);
+  font-family: 'Courier New', monospace;
+  border-left: 2px solid rgba(161, 0, 255, 0.3);
 }
 
 .log-communication {

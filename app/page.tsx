@@ -26,6 +26,7 @@ interface AgentLog {
   agentType?: 'orchestrator' | 'agent' | 'tool'
   from?: string
   to?: string
+  details?: string
 }
 
 export default function Home() {
@@ -66,7 +67,8 @@ export default function Home() {
     type: 'info' | 'success' | 'processing' = 'info',
     agentType?: 'orchestrator' | 'agent' | 'tool',
     from?: string,
-    to?: string
+    to?: string,
+    details?: string
   ) => {
     const log: AgentLog = {
       id: Date.now().toString() + Math.random(),
@@ -77,6 +79,7 @@ export default function Home() {
       agentType,
       from,
       to,
+      details,
     }
     setAgentLogs(prev => [...prev, log])
   }
@@ -196,9 +199,9 @@ export default function Home() {
                 agentType = 'agent'
               }
               
-              // Add to logs
+              // Add to logs with details
               const logType = data.status === 'complete' ? 'success' : 'processing'
-              addLog(data.agent, data.action, logType, agentType)
+              addLog(data.agent, data.action, logType, agentType, undefined, undefined, data.details)
               
               setAgents(prev => {
                 const existing = prev.find(a => a.agent === data.agent)
@@ -298,6 +301,9 @@ export default function Home() {
                     <span className="log-time">{log.timestamp}</span>
                   </div>
                   <div className="log-message">{log.message}</div>
+                  {log.details && (
+                    <div className="log-details">{log.details}</div>
+                  )}
                   {log.from && log.to && (
                     <div className="log-communication">
                       <span className="comm-arrow">→</span> Communication from {log.from} to {log.to}
@@ -332,7 +338,7 @@ export default function Home() {
               </svg>
             </div>
             <nav className="accenture-nav">
-              <a 
+              <button 
                 className={`accenture-nav-link ${!showResults ? 'active' : ''}`}
                 onClick={() => {
                   if (showResults) {
@@ -349,17 +355,17 @@ export default function Home() {
                 }}
               >
                 Analyze
-              </a>
-              <a className="accenture-nav-link" onClick={() => router.push('/architecture')}>
+              </button>
+              <button className="accenture-nav-link" onClick={() => router.push('/architecture')}>
                 Architecture
-              </a>
-              <a className="accenture-nav-link" onClick={() => router.push('/settings')}>
+              </button>
+              <button className="accenture-nav-link" onClick={() => router.push('/settings')}>
                 Settings
-              </a>
+              </button>
               {showResults && (
-                <a className={`accenture-nav-link ${showAnalyticsModal ? 'active' : ''}`} onClick={() => setShowAnalyticsModal(true)}>
+                <button className={`accenture-nav-link ${showAnalyticsModal ? 'active' : ''}`} onClick={() => setShowAnalyticsModal(true)}>
                   Analytics
-                </a>
+                </button>
               )}
             </nav>
             <button 
