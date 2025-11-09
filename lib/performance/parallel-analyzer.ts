@@ -123,7 +123,9 @@ export class ParallelAnalyzer {
       while (pending.length > 0 && !this.aborted) {
         const batch = pending.splice(0, BATCH_SIZE)
         
-        updateAgent('Analyzer Agent', `Processing batch of ${batch.length} opportunities`, 'active')
+        // Show which opportunities are being analyzed
+        const batchNames = batch.slice(0, 2).map(o => `"${o.oppName.substring(0, 50)}${o.oppName.length > 50 ? '...' : ''}"`).join(', ')
+        updateAgent('Analyzer Agent', `Analyzing: ${batchNames}${batch.length > 2 ? ` + ${batch.length - 2} more` : ''}`, 'active')
 
         // Check cache first
         const batchPromises = batch.map(async (opp) => {
@@ -159,6 +161,20 @@ export class ParallelAnalyzer {
         const currentOpp = batchResults[batchResults.length - 1]?.oppName || ''
         onProgress(processed, total, currentOpp)
 
+        // Show specific tagging results
+        const tagged = batchResults.filter(r => r.tags.length > 0)
+        if (tagged.length > 0) {
+          const sample = tagged[0]
+          const shortRationale = sample.rationale.substring(0, 80).replace(/\n/g, ' ')
+          updateAgent(
+            'Analyzer Agent', 
+            `✓ Tagged ${tagged.length}/${batchResults.length} in batch. Example: "${sample.oppName.substring(0, 40)}..." → ${sample.tags.join(', ')} (${shortRationale}...)`, 
+            'complete'
+          )
+        } else {
+          updateAgent('Analyzer Agent', `✓ Batch complete (${processed}/${total}). No tags assigned for reviewed opportunities.`, 'complete')
+        }
+
         // Rate limiting - wait between batches
         if (pending.length > 0 && !this.aborted) {
           await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY))
@@ -170,7 +186,17 @@ export class ParallelAnalyzer {
         throw new Error('Analysis aborted by user')
       }
 
-      updateAgent('Analyzer Agent', 'Analysis complete', 'complete')
+      // Final summary from Analyzer
+      const finalTagged = completed.filter(r => r.tags.length > 0)
+      const aiCount = completed.filter(r => r.tags.includes('AI')).length
+      const analyticsCount = completed.filter(r => r.tags.includes('Analytics')).length
+      const dataCount = completed.filter(r => r.tags.includes('Data')).length
+      
+      updateAgent(
+        'Analyzer Agent', 
+        `Analysis complete: ${finalTagged.length}/${completed.length} opportunities tagged (AI: ${aiCount}, Analytics: ${analyticsCount}, Data: ${dataCount}). Sending results to Orchestrator.`, 
+        'complete'
+      )
 
       // Clear state on successful completion
       this.clearState()

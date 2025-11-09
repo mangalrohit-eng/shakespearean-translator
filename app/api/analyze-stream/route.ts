@@ -123,23 +123,37 @@ export async function POST(request: Request) {
           return
         }
 
+        // Show sample opportunities found
+        const sampleOpps = filteredOpportunities.slice(0, 3).map(o => o.oppName).join(', ')
         controller.enqueue(
           encoder.encode(`data: ${JSON.stringify({
             type: 'agent',
             agent: 'Filter (Tool)',
-            action: `Filter complete: ${filteredOpportunities.length} Comms & Media opportunities identified`,
+            action: `Filter complete: ${filteredOpportunities.length} Comms & Media opportunities identified. Sample: "${sampleOpps}${filteredOpportunities.length > 3 ? '...' : ''}"`,
             status: 'complete'
           })}\n\n`)
         )
 
         await new Promise(resolve => setTimeout(resolve, 200))
 
+        // Filter → Orchestrator (response)
+        controller.enqueue(
+          encoder.encode(`data: ${JSON.stringify({
+            type: 'agent',
+            agent: 'Filter (Tool)',
+            action: `Passing ${filteredOpportunities.length} opportunities back to Orchestrator for analysis`,
+            status: 'complete'
+          })}\n\n`)
+        )
+
+        await new Promise(resolve => setTimeout(resolve, 300))
+
         // Orchestrator → Analyzer Agents
         controller.enqueue(
           encoder.encode(`data: ${JSON.stringify({
             type: 'agent',
             agent: 'Orchestrator',
-            action: `Dispatching ${filteredOpportunities.length} opportunities to Analyzer Agent pool`,
+            action: `Received ${filteredOpportunities.length} filtered opportunities. Dispatching to AI Analyzer Agent pool with parallel processing (batch size: 3)`,
             status: 'active'
           })}\n\n`)
         )
@@ -196,6 +210,20 @@ export async function POST(request: Request) {
           onAgentUpdate
         )
 
+        await new Promise(resolve => setTimeout(resolve, 200))
+
+        // Orchestrator receives results
+        controller.enqueue(
+          encoder.encode(`data: ${JSON.stringify({
+            type: 'agent',
+            agent: 'Orchestrator',
+            action: `Received analyzed results from Analyzer Agent. Preparing Excel export...`,
+            status: 'active'
+          })}\n\n`)
+        )
+
+        await new Promise(resolve => setTimeout(resolve, 300))
+
         // Send all results
         results.forEach(analyzed => {
           controller.enqueue(
@@ -205,6 +233,16 @@ export async function POST(request: Request) {
             })}\n\n`)
           )
         })
+
+        // Orchestrator complete
+        controller.enqueue(
+          encoder.encode(`data: ${JSON.stringify({
+            type: 'agent',
+            agent: 'Orchestrator',
+            action: `Workflow complete. ${results.length} opportunities analyzed and ready for export.`,
+            status: 'complete'
+          })}\n\n`)
+        )
 
         // Send completion
         controller.enqueue(
