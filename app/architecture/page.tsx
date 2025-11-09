@@ -41,22 +41,27 @@ export default function ArchitecturePage() {
         </div>
       </header>
 
-      <div className="container" style={{marginTop: '40px'}}>
-        <div className="page-instructions">
-          <h3>About This Architecture</h3>
-          <p>
-            This page visualizes the LangGraph multi-agent system that powers our opportunity analysis. 
-            Our workflow uses four specialized AI agents, each powered by GPT-4o-mini, working together to process your data intelligently.
-          </p>
-          <p>
-            <strong>What you'll see:</strong> The Orchestrator coordinates the entire workflow, dispatching tasks to specialized agents (Excel Reader, Filter, and Analyzer). 
-            Each agent uses AI reasoning to make decisions, and they communicate through structured messages. Hover over each agent to learn more about their role.
+      <div className="container" style={{marginTop: '20px', maxWidth: '1400px'}}>
+        <div className="page-hero">
+          <h1>Multi-Agent Architecture</h1>
+          <p className="hero-subtitle">
+            LangGraph workflow with four AI agents powered by GPT-4o-mini
+            <button className="help-tooltip-trigger" title="About this architecture">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                <circle cx="12" cy="12" r="10" strokeWidth="2"/>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+              <span className="tooltip-content">
+                <strong>How It Works</strong>
+                <p>The Orchestrator coordinates specialized agents (Excel Reader, Filter, Analyzer). Each uses AI reasoning and they communicate via structured messages. Hover over agents to learn more.</p>
+              </span>
+            </button>
           </p>
         </div>
       </div>
 
       {/* Main Architecture - Above the Fold */}
-      <div className="architecture-flow" style={{marginTop: '40px'}}>
+      <div className="architecture-flow" style={{marginTop: '20px'}}>
         
         {/* START Node */}
         <div className="agent-node-compact start">

@@ -249,20 +249,6 @@ export default function Home() {
               <button className="accenture-nav-link active">Analyze</button>
               <button className="accenture-nav-link" onClick={() => router.push('/architecture')}>Architecture</button>
               <button className="accenture-nav-link" onClick={() => router.push('/settings')}>Settings</button>
-              <button 
-                className="activity-toggle-btn" 
-                onClick={toggleSidebar}
-                aria-label={isSidebarOpen ? 'Hide agent activity' : 'Show agent activity'}
-                aria-expanded={isSidebarOpen}
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
-                  <rect x="3" y="3" width="7" height="7" strokeWidth="2" rx="1"/>
-                  <rect x="14" y="3" width="7" height="7" strokeWidth="2" rx="1"/>
-                  <rect x="14" y="14" width="7" height="7" strokeWidth="2" rx="1"/>
-                  <rect x="3" y="14" width="7" height="7" strokeWidth="2" rx="1"/>
-                </svg>
-                {isSidebarOpen ? 'Hide' : 'Show'} Agents
-              </button>
             </nav>
           </div>
         </header>
@@ -270,20 +256,24 @@ export default function Home() {
         <div className="container">
           <div className="page-hero">
             <h1>Data & AI Opportunity Intelligence</h1>
-            <p className="hero-subtitle">Analyze business opportunities using advanced AI to identify Data, AI, and Analytics potential</p>
-          </div>
-
-          <div className="page-instructions">
-            <h3>How to Use This Tool</h3>
-            <p>
-              Upload an Excel file containing business opportunities to automatically analyze and tag them for Data, AI, and Analytics relevance. 
-              Our multi-agent AI system will filter for US-Comms & Media opportunities, analyze each one using GPT-4o-mini, and generate an Excel report with tags, confidence scores, and rationale.
+            <p className="hero-subtitle">
+              Analyze business opportunities using advanced AI to identify Data, AI, and Analytics potential
+              <button className="help-tooltip-trigger" title="How to use this tool">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                  <circle cx="12" cy="12" r="10" strokeWidth="2"/>
+                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+                <span className="tooltip-content">
+                  <strong>How to Use This Tool</strong>
+                  <ol>
+                    <li>Upload your Excel file with opportunity data</li>
+                    <li>Watch as AI agents process and analyze in real-time</li>
+                    <li>Review results and download tagged Excel file</li>
+                  </ol>
+                  <p style="margin-top: 8px; font-size: 0.875rem; opacity: 0.9;">Our multi-agent system filters for US-Comms & Media opportunities and uses GPT-4o-mini to generate tags, confidence scores, and rationale.</p>
+                </span>
+              </button>
             </p>
-            <ul>
-              <li><strong>Step 1:</strong> Upload your Excel file with opportunity data</li>
-              <li><strong>Step 2:</strong> Watch as our AI agents process and analyze the data in real-time (check the activity sidebar)</li>
-              <li><strong>Step 3:</strong> Download the tagged Excel file with AI-generated insights</li>
-            </ul>
           </div>
 
           {error && <div className="error">{error}</div>}
@@ -446,11 +436,23 @@ export default function Home() {
         </div>
       </div>
 
-      {isSidebarOpen && (
-        <div className="agent-sidebar">
-          <div className="sidebar-header">
-            <h3>Agent Activity</h3>
-          </div>
+      <div className={`agent-sidebar ${isSidebarOpen ? '' : 'collapsed'}`}>
+        <div className="sidebar-header">
+          <h3>Agent Activity</h3>
+          <button 
+            className="sidebar-collapse-btn" 
+            onClick={toggleSidebar}
+            aria-label={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+              {isSidebarOpen ? (
+                <path d="M9 18l6-6-6-6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              ) : (
+                <path d="M15 18l-6-6 6-6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              )}
+            </svg>
+          </button>
+        </div>
         <div className="agent-logs">
           {agentLogs.length === 0 ? (
             <div className="no-logs">
@@ -489,7 +491,6 @@ export default function Home() {
           <div ref={logEndRef} />
         </div>
       </div>
-      )}
     </div>
   )
 }

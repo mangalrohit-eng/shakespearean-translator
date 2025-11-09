@@ -164,22 +164,25 @@ export default function SettingsPage() {
       <div className="container">
         <div className="page-hero">
           <h1>Analysis Configuration</h1>
-          <p className="hero-subtitle">Define custom rules for identifying AI, Analytics, and Data opportunities</p>
-        </div>
-
-        <div className="page-instructions">
-          <h3>How to Configure Analysis Rules</h3>
-          <p>
-            Customize how the AI analyzes opportunities by adding your own instructions. These rules help the AnalyzerAgent identify specific keywords, 
-            patterns, or criteria that indicate Data, AI, or Analytics opportunities.
+          <p className="hero-subtitle">
+            Define custom rules for identifying AI, Analytics, and Data opportunities
+            <button className="help-tooltip-trigger" title="How to configure">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                <circle cx="12" cy="12" r="10" strokeWidth="2"/>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+              <span className="tooltip-content">
+                <strong>How to Configure Analysis Rules</strong>
+                <ul>
+                  <li><strong>Add:</strong> Type rules in natural language (e.g., "Contains: machine learning")</li>
+                  <li><strong>Category:</strong> Choose AI, Analytics, or Data</li>
+                  <li><strong>Edit/Delete:</strong> Click icons to modify or remove</li>
+                  <li><strong>Reset:</strong> Restore defaults anytime</li>
+                </ul>
+                <p style="margin-top: 8px; font-size: 0.875rem; opacity: 0.9;"><strong>Note:</strong> Rules are saved locally and used by AnalyzerAgent during analysis.</p>
+              </span>
+            </button>
           </p>
-          <ul>
-            <li><strong>Add Instructions:</strong> Type your rule in natural language (e.g., "Contains keywords: machine learning, neural networks")</li>
-            <li><strong>Select Category:</strong> Choose whether the rule applies to AI, Analytics, or Data opportunities</li>
-            <li><strong>Edit/Delete:</strong> Click the edit icon to modify or the trash icon to remove any instruction</li>
-            <li><strong>Reset:</strong> Use the "Reset to Defaults" button to restore the original instruction set</li>
-          </ul>
-          <p><strong>Note:</strong> Your custom instructions are saved locally and will be used by the AI when analyzing opportunities.</p>
         </div>
         
         <div className="header-actions" style={{ marginBottom: '24px', display: 'flex', justifyContent: 'flex-end' }}>
