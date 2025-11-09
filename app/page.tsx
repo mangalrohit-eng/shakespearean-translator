@@ -22,6 +22,9 @@ interface AgentLog {
   agent: string
   message: string
   type: 'info' | 'success' | 'processing'
+  agentType?: 'orchestrator' | 'agent' | 'tool'
+  from?: string
+  to?: string
 }
 
 export default function Home() {
@@ -45,15 +48,30 @@ export default function Home() {
   }, [agentLogs])
 
   // Add log entry
-  const addLog = (agent: string, message: string, type: 'info' | 'success' | 'processing' = 'info') => {
+  const addLog = (
+    agent: string, 
+    message: string, 
+    type: 'info' | 'success' | 'processing' = 'info',
+    agentType?: 'orchestrator' | 'agent' | 'tool',
+    from?: string,
+    to?: string
+  ) => {
     const log: AgentLog = {
       id: Date.now().toString() + Math.random(),
       timestamp: new Date().toLocaleTimeString(),
       agent,
       message,
       type,
+      agentType,
+      from,
+      to,
     }
     setAgentLogs(prev => [...prev, log])
+  }
+
+  // Add communication log (agent-to-agent)
+  const addCommunication = (from: string, to: string, message: string) => {
+    addLog(`${from} → ${to}`, message, 'info', undefined, from, to)
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,7 +117,7 @@ export default function Home() {
     setProgress(null)
     setAgents([])
     setAgentLogs([])
-    addLog('System', 'Starting analysis pipeline...', 'info')
+    addLog('Orchestrator', 'Initializing multi-agent analysis pipeline...', 'info', 'orchestrator')
 
     // Create abort controller for cancellation
     abortControllerRef.current = new AbortController()
@@ -152,9 +170,17 @@ export default function Home() {
             if (data.type === 'progress') {
               setProgress(data)
             } else if (data.type === 'agent') {
+              // Determine agent type
+              let agentType: 'orchestrator' | 'agent' | 'tool' = 'agent'
+              if (data.agent.toLowerCase().includes('orchestrator')) {
+                agentType = 'orchestrator'
+              } else if (data.agent.toLowerCase().includes('reader') || data.agent.toLowerCase().includes('writer') || data.agent.toLowerCase().includes('filter')) {
+                agentType = 'tool'
+              }
+              
               // Add to logs
               const logType = data.status === 'complete' ? 'success' : 'processing'
-              addLog(data.agent, data.action, logType)
+              addLog(data.agent, data.action, logType, agentType)
               
               setAgents(prev => {
                 const existing = prev.find(a => a.agent === data.agent)
@@ -242,10 +268,23 @@ export default function Home() {
               agentLogs.map(log => (
                 <div key={log.id} className={`log-entry log-${log.type}`}>
                   <div className="log-header">
-                    <span className="log-agent">{log.agent}</span>
+                    <div className="log-agent-info">
+                      <span className="log-agent">{log.agent}</span>
+                      {log.agentType && (
+                        <span className={`agent-type-badge ${log.agentType}`}>
+                          {log.agentType === 'orchestrator' ? '🎯' : log.agentType === 'agent' ? '🤖' : '🔧'}
+                          {' '}{log.agentType.toUpperCase()}
+                        </span>
+                      )}
+                    </div>
                     <span className="log-time">{log.timestamp}</span>
                   </div>
                   <div className="log-message">{log.message}</div>
+                  {log.from && log.to && (
+                    <div className="log-communication">
+                      <span className="comm-arrow">→</span> Communication from {log.from} to {log.to}
+                    </div>
+                  )}
                 </div>
               ))
             )}

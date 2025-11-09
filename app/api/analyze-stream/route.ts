@@ -29,12 +29,36 @@ export async function POST(request: Request) {
           return
         }
 
-        // Agent 1: Excel Reader Agent
+        // Orchestrator initializes
         controller.enqueue(
           encoder.encode(`data: ${JSON.stringify({
             type: 'agent',
-            agent: 'Excel Reader Agent',
-            action: 'Reading Excel file...',
+            agent: 'Orchestrator',
+            action: 'Coordinating multi-agent workflow',
+            status: 'active'
+          })}\n\n`)
+        )
+
+        await new Promise(resolve => setTimeout(resolve, 300))
+
+        // Orchestrator → Excel Reader
+        controller.enqueue(
+          encoder.encode(`data: ${JSON.stringify({
+            type: 'agent',
+            agent: 'Orchestrator',
+            action: 'Instructing Excel Reader to parse uploaded file',
+            status: 'active'
+          })}\n\n`)
+        )
+
+        await new Promise(resolve => setTimeout(resolve, 200))
+
+        // Tool: Excel Reader Agent
+        controller.enqueue(
+          encoder.encode(`data: ${JSON.stringify({
+            type: 'agent',
+            agent: 'Excel Reader (Tool)',
+            action: 'Parsing Excel file structure...',
             status: 'active'
           })}\n\n`)
         )
@@ -56,20 +80,32 @@ export async function POST(request: Request) {
         controller.enqueue(
           encoder.encode(`data: ${JSON.stringify({
             type: 'agent',
-            agent: 'Excel Reader Agent',
-            action: `Found ${rawData.length} opportunities`,
+            agent: 'Excel Reader (Tool)',
+            action: `Successfully extracted ${rawData.length} rows`,
             status: 'complete'
+          })}\n\n`)
+        )
+
+        await new Promise(resolve => setTimeout(resolve, 200))
+
+        // Orchestrator → Filter
+        controller.enqueue(
+          encoder.encode(`data: ${JSON.stringify({
+            type: 'agent',
+            agent: 'Orchestrator',
+            action: `Requesting Filter Tool to extract Comms & Media opportunities from ${rawData.length} rows`,
+            status: 'active'
           })}\n\n`)
         )
 
         await new Promise(resolve => setTimeout(resolve, 300))
 
-        // Agent 2: Filter Agent
+        // Tool: Filter Agent
         controller.enqueue(
           encoder.encode(`data: ${JSON.stringify({
             type: 'agent',
-            agent: 'Filter Agent',
-            action: 'Filtering for US-Comms & Media opportunities...',
+            agent: 'Filter (Tool)',
+            action: 'Applying client group filter: US-Comms & Media...',
             status: 'active'
           })}\n\n`)
         )
@@ -90,9 +126,21 @@ export async function POST(request: Request) {
         controller.enqueue(
           encoder.encode(`data: ${JSON.stringify({
             type: 'agent',
-            agent: 'Filter Agent',
-            action: `Filtered to ${filteredOpportunities.length} Comms & Media opportunities`,
+            agent: 'Filter (Tool)',
+            action: `Filter complete: ${filteredOpportunities.length} Comms & Media opportunities identified`,
             status: 'complete'
+          })}\n\n`)
+        )
+
+        await new Promise(resolve => setTimeout(resolve, 200))
+
+        // Orchestrator → Analyzer Agents
+        controller.enqueue(
+          encoder.encode(`data: ${JSON.stringify({
+            type: 'agent',
+            agent: 'Orchestrator',
+            action: `Dispatching ${filteredOpportunities.length} opportunities to Analyzer Agent pool`,
+            status: 'active'
           })}\n\n`)
         )
 
@@ -102,9 +150,18 @@ export async function POST(request: Request) {
         const customInstructions: CustomInstruction[] | undefined = undefined
         // Note: Custom instructions would be passed from client in real scenario
 
-        // Agent 3-5: Analyzer Agent (with parallel processing)
+        // Analyzer Agents (with parallel processing)
         const total = filteredOpportunities.length
         const analyzer = new ParallelAnalyzer()
+
+        controller.enqueue(
+          encoder.encode(`data: ${JSON.stringify({
+            type: 'agent',
+            agent: 'Analyzer Agent',
+            action: 'Initialized AI analysis engine with parallel processing',
+            status: 'active'
+          })}\n\n`)
+        )
 
         // Progress callback
         const onProgress = (current: number, total: number, currentOpp: string) => {
