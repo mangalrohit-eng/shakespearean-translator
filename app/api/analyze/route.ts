@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
-import { parseExcelFile, filterCommsMedia } from '@/lib/excel/reader'
 import { createExcelOutput } from '@/lib/excel/writer'
-import { analyzeOpportunitiesBatch } from '@/lib/agents/analyzer'
+import { executeSimpleWorkflow } from '@/lib/agents/simple-workflow'
 
 export const maxDuration = 300 // 5 minutes for Vercel
 
@@ -9,6 +8,8 @@ export async function POST(request: Request) {
   try {
     const formData = await request.formData()
     const file = formData.get('file') as File
+    const customInstructionsString = formData.get('customInstructions') as string
+    const customInstructions = customInstructionsString ? JSON.parse(customInstructionsString) : []
     
     if (!file) {
       return NextResponse.json(
@@ -24,32 +25,33 @@ export async function POST(request: Request) {
       )
     }
 
-    // Read Excel file
+    // Convert file to buffer
     const arrayBuffer = await file.arrayBuffer()
-    const rawData = parseExcelFile(arrayBuffer)
 
-    if (rawData.length === 0) {
+    // Execute the real LangGraph agent workflow
+    // This runs: OrchestratorAgent -> ExcelReaderAgent -> OrchestratorAgent -> FilterAgent -> OrchestratorAgent -> AnalyzerAgent -> OrchestratorAgent
+    const finalState = await executeSimpleWorkflow(
+      arrayBuffer,
+      customInstructions
+    )
+
+    // Check for errors from the workflow
+    if (finalState.errors.length > 0) {
       return NextResponse.json(
-        { error: 'No data found in Excel file' },
+        { error: finalState.errors[0] },
         { status: 400 }
       )
     }
 
-    // Filter for Comms & Media
-    const filteredOpportunities = filterCommsMedia(rawData)
-
-    if (filteredOpportunities.length === 0) {
+    if (finalState.analyzedOpportunities.length === 0) {
       return NextResponse.json(
-        { error: 'No Comms & Media opportunities found in the file' },
+        { error: 'No opportunities were analyzed. Check if the file contains Comms & Media opportunities.' },
         { status: 400 }
       )
     }
 
-    // Analyze opportunities
-    const analyzedOpportunities = await analyzeOpportunitiesBatch(filteredOpportunities)
-
-    // Create output Excel
-    const outputBuffer = createExcelOutput(analyzedOpportunities)
+    // Create output Excel from analyzed opportunities
+    const outputBuffer = createExcelOutput(finalState.analyzedOpportunities)
 
     // Return the Excel file
     return new NextResponse(outputBuffer as unknown as BodyInit, {
