@@ -1,4 +1,4 @@
-import { StateGraph, END, MemorySaver, Annotation } from '@langchain/langgraph'
+import { StateGraph, END, MemorySaver } from '@langchain/langgraph'
 import { WorkflowState, createInitialState } from './state'
 import { excelReaderAgent } from './excel-reader-agent'
 import { filterAgent } from './filter-agent'
@@ -9,64 +9,63 @@ import { analyzerAgent } from './analyzer-agent'
  * Determine which node to execute next based on current state
  */
 
-function shouldContinueAfterExcelRead(state: WorkflowState): typeof END | 'filter' {
+function shouldContinueAfterExcelRead(state: WorkflowState): 'filter' | '__end__' {
   // If errors occurred, end the workflow
   if (state.errors && state.errors.length > 0) {
-    return END
+    return '__end__'
   }
   
   // If no data was extracted, end
   if (!state.rawData || state.rawData.length === 0) {
-    return END
+    return '__end__'
   }
   
   // Otherwise, proceed to filtering
   return 'filter'
 }
 
-function shouldContinueAfterFilter(state: WorkflowState): typeof END | 'analyzer' {
+function shouldContinueAfterFilter(state: WorkflowState): 'analyzer' | '__end__' {
   // If errors occurred, end the workflow
   if (state.errors && state.errors.length > 0) {
-    return END
+    return '__end__'
   }
   
   // If no opportunities found after filtering, end
   if (!state.filteredOpportunities || state.filteredOpportunities.length === 0) {
-    return END
+    return '__end__'
   }
   
   // Otherwise, proceed to analysis
   return 'analyzer'
 }
 
-function shouldContinueAfterAnalyzer(state: WorkflowState): typeof END {
+function shouldContinueAfterAnalyzer(state: WorkflowState): '__end__' {
   // After analysis, always end (for now)
   // Could extend to add export agent here
-  return END
+  return '__end__'
 }
-
-// Define state annotation for LangGraph
-const StateAnnotation = Annotation.Root({
-  fileBuffer: Annotation<ArrayBuffer | undefined>,
-  customInstructions: Annotation<any[] | undefined>,
-  rawData: Annotation<any[]>,
-  filteredOpportunities: Annotation<any[]>,
-  analyzedOpportunities: Annotation<any[]>,
-  currentStep: Annotation<string>,
-  totalProcessed: Annotation<number>,
-  errors: Annotation<string[]>,
-  messages: Annotation<any[]>,
-  progressUpdates: Annotation<any[]>,
-  agentLogs: Annotation<any[]>,
-})
 
 /**
  * Create the StateGraph workflow
  * This defines the multi-agent workflow with conditional routing
  */
 export function createWorkflowGraph() {
-  // Create the graph with state annotation
-  const workflow = new StateGraph(StateAnnotation)
+  // Create the graph - LangGraph 1.0 infers state from agent returns
+  const workflow = new StateGraph<WorkflowState>({
+    channels: {
+      fileBuffer: null,
+      customInstructions: null,
+      rawData: null,
+      filteredOpportunities: null,
+      analyzedOpportunities: null,
+      currentStep: null,
+      totalProcessed: null,
+      errors: null,
+      messages: null,
+      progressUpdates: null,
+      agentLogs: null,
+    }
+  })
 
   // Add agent nodes
   workflow.addNode('excelReader', excelReaderAgent)
@@ -76,11 +75,9 @@ export function createWorkflowGraph() {
   // Set entry point - first node to execute
   workflow.setEntryPoint('excelReader')
 
-  // Add conditional edges (routing)
+  // Add conditional edges (routing) - simple string returns
   workflow.addConditionalEdges('excelReader', shouldContinueAfterExcelRead)
-
   workflow.addConditionalEdges('filter', shouldContinueAfterFilter)
-
   workflow.addConditionalEdges('analyzer', shouldContinueAfterAnalyzer)
 
   return workflow
