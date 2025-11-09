@@ -259,7 +259,7 @@ export default function Home() {
             <p className="hero-subtitle">
               Analyze business opportunities using advanced AI to identify Data, AI, and Analytics potential
               <button className="help-tooltip-trigger" title="How to use this tool">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="12" height="12">
                   <circle cx="12" cy="12" r="10" strokeWidth="2"/>
                   <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" strokeWidth="2" strokeLinecap="round"/>
                 </svg>
