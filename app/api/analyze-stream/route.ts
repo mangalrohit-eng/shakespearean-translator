@@ -2,7 +2,7 @@ import { executeSimpleWorkflow } from '@/lib/agents/simple-workflow'
 import { WorkflowState } from '@/lib/agents/state'
 import type { CustomInstruction } from '@/lib/agents/analyzer'
 
-export const maxDuration = 300 // 5 minutes for Vercel
+export const maxDuration = 300 // 5 minutes max for Vercel Pro (hobby plan is 10s)
 
 export async function POST(request: Request) {
   const encoder = new TextEncoder()
@@ -131,12 +131,25 @@ export async function POST(request: Request) {
         )
 
         controller.close()
-      } catch (error) {
+      } catch (error: any) {
         console.error('Stream error:', error)
+        
+        // Provide more specific error messages
+        let errorMessage = 'Analysis failed'
+        if (error instanceof Error) {
+          if (error.message.includes('timeout') || error.message.includes('ETIMEDOUT')) {
+            errorMessage = 'Analysis timed out. Large files may exceed the 5-minute limit. Consider processing in smaller batches.'
+          } else if (error.message.includes('rate limit')) {
+            errorMessage = 'OpenAI rate limit exceeded. Please wait a moment and try again.'
+          } else {
+            errorMessage = error.message
+          }
+        }
+        
         controller.enqueue(
           encoder.encode(`data: ${JSON.stringify({
             type: 'error',
-            message: error instanceof Error ? error.message : 'Analysis failed'
+            message: errorMessage
           })}\n\n`)
         )
         controller.close()

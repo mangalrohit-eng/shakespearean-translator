@@ -81,34 +81,95 @@ Describe your analysis strategy in 2-3 sentences.`
         timestamp: new Date().toISOString(),
       })
 
-      // Analyze this opportunity using OpenAI
-      const analyzed = await analyzeOpportunity(opp, state.customInstructions)
-      analyzedOpportunities.push(analyzed)
+      try {
+        // Analyze this opportunity using OpenAI with retry logic
+        let analyzed: AnalyzedOpportunity
+        let retries = 0
+        const maxRetries = 3
+        
+        while (retries < maxRetries) {
+          try {
+            analyzed = await analyzeOpportunity(opp, state.customInstructions)
+            break // Success, exit retry loop
+          } catch (error: any) {
+            retries++
+            if (retries >= maxRetries) {
+              // Max retries reached, log error and create a fallback result
+              console.error(`Failed to analyze opportunity ${opp.id} after ${maxRetries} retries:`, error)
+              agentLogs.push({
+                agent: 'AnalyzerAgent',
+                action: `⚠️ Failed to analyze "${opp.opportunityName.substring(0, 40)}..." after ${maxRetries} attempts. Tagging as "None". Error: ${error.message}`,
+                status: 'error',
+                timestamp: new Date().toISOString(),
+              })
+              
+              // Create fallback result
+              analyzed = {
+                ...opp,
+                tags: [],
+                rationale: `Analysis failed after ${maxRetries} retries: ${error.message}`,
+                confidence: 0,
+              }
+              break
+            }
+            // Wait before retry (exponential backoff)
+            await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000))
+            agentLogs.push({
+              agent: 'AnalyzerAgent',
+              action: `⚠️ Retry ${retries}/${maxRetries} for "${opp.opportunityName.substring(0, 40)}..." due to error: ${error.message}`,
+              status: 'active',
+              timestamp: new Date().toISOString(),
+            })
+          }
+        }
+        
+        analyzedOpportunities.push(analyzed!)
+      } catch (error: any) {
+        // Catastrophic error - log and continue with next opportunity
+        console.error(`Critical error analyzing opportunity ${opp.id}:`, error)
+        agentLogs.push({
+          agent: 'AnalyzerAgent',
+          action: `❌ Critical error for "${opp.opportunityName.substring(0, 40)}...": ${error.message}. Skipping.`,
+          status: 'error',
+          timestamp: new Date().toISOString(),
+        })
+        
+        // Add a placeholder result so we don't lose track
+        analyzedOpportunities.push({
+          ...opp,
+          tags: [],
+          rationale: `Critical error during analysis: ${error.message}`,
+          confidence: 0,
+        })
+      }
 
       // Log result with details
-      const tags = analyzed.tags.length > 0 ? analyzed.tags.join(', ') : 'None'
-      const shortRationale = analyzed.rationale.substring(0, 100).replace(/\n/g, ' ')
-      
-      agentLogs.push({
-        agent: 'AnalyzerAgent',
-        action: `✓ Completed: "${analyzed.opportunityName.substring(0, 40)}..." → Tagged: [${tags}] (${analyzed.confidence}% confidence). Rationale: ${shortRationale}...`,
-        status: 'complete',
-        timestamp: new Date().toISOString(),
-        details: {
-          opportunityId: analyzed.id,
-          tags: analyzed.tags,
-          confidence: analyzed.confidence,
-          rationale: analyzed.rationale,
-        },
-      })
+      const lastAnalyzed = analyzedOpportunities[analyzedOpportunities.length - 1]
+      if (lastAnalyzed) {
+        const tags = lastAnalyzed.tags.length > 0 ? lastAnalyzed.tags.join(', ') : 'None'
+        const shortRationale = lastAnalyzed.rationale.substring(0, 100).replace(/\n/g, ' ')
+        
+        agentLogs.push({
+          agent: 'AnalyzerAgent',
+          action: `✓ Completed: "${lastAnalyzed.opportunityName.substring(0, 40)}..." → Tagged: [${tags}] (${lastAnalyzed.confidence}% confidence). Rationale: ${shortRationale}...`,
+          status: 'complete',
+          timestamp: new Date().toISOString(),
+          details: {
+            opportunityId: lastAnalyzed.id,
+            tags: lastAnalyzed.tags,
+            confidence: lastAnalyzed.confidence,
+            rationale: lastAnalyzed.rationale,
+          },
+        })
 
-      // Progress update
-      progressUpdates.push({
-        current,
-        total: totalOpportunities,
-        currentOpp: analyzed.opportunityName,
-        timestamp: new Date().toISOString(),
-      })
+        // Progress update
+        progressUpdates.push({
+          current,
+          total: totalOpportunities,
+          currentOpp: lastAnalyzed.opportunityName,
+          timestamp: new Date().toISOString(),
+        })
+      }
 
       // Stream real-time update to frontend
       if (onUpdate) {

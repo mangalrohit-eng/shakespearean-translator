@@ -212,20 +212,21 @@ export default function Home() {
   }
 
   async function handleDownload() {
-    if (!file) return
+    if (results.length === 0) {
+      setError('No results to download. Please run the analysis first.')
+      return
+    }
     
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-      
-      const storedInstructions = localStorage.getItem('customInstructions')
-      if (storedInstructions) {
-        formData.append('customInstructions', storedInstructions)
-      }
-
-      const response = await fetch('/api/analyze', {
+      // Send the analyzed results to generate Excel
+      const response = await fetch('/api/export-results', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          results: results,
+        }),
       })
       
       if (response.ok) {
@@ -237,7 +238,8 @@ export default function Home() {
         link.click()
         setSuccess('Excel file downloaded successfully!')
       } else {
-        throw new Error('Failed to generate Excel file')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to generate Excel file')
       }
     } catch (err: any) {
       setError(err instanceof Error ? err.message : 'Download failed')
