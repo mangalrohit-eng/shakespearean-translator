@@ -179,7 +179,7 @@ export default function SettingsPage() {
                   <li><strong>Edit/Delete:</strong> Click icons to modify or remove</li>
                   <li><strong>Reset:</strong> Restore defaults anytime</li>
                 </ul>
-                <p style="margin-top: 8px; font-size: 0.875rem; opacity: 0.9;"><strong>Note:</strong> Rules are saved locally and used by AnalyzerAgent during analysis.</p>
+                <p style={{marginTop: '8px', fontSize: '0.875rem', opacity: 0.9}}><strong>Note:</strong> Rules are saved locally and used by AnalyzerAgent during analysis.</p>
               </span>
             </button>
           </p>

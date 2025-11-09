@@ -270,7 +270,7 @@ export default function Home() {
                     <li>Watch as AI agents process and analyze in real-time</li>
                     <li>Review results and download tagged Excel file</li>
                   </ol>
-                  <p style="margin-top: 8px; font-size: 0.875rem; opacity: 0.9;">Our multi-agent system filters for US-Comms & Media opportunities and uses GPT-4o-mini to generate tags, confidence scores, and rationale.</p>
+                  <p style={{marginTop: '8px', fontSize: '0.875rem', opacity: 0.9}}>Our multi-agent system filters for US-Comms & Media opportunities and uses GPT-4o-mini to generate tags, confidence scores, and rationale.</p>
                 </span>
               </button>
             </p>
@@ -367,7 +367,7 @@ export default function Home() {
               <div className="results-header">
                 <h2>Analysis Results</h2>
                 <button className="download-excel-btn" onClick={handleDownload}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                   Download Excel
