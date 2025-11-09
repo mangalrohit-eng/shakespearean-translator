@@ -21,6 +21,10 @@ export default function Home() {
   const [progress, setProgress] = useState(0)
   const [progressStatus, setProgressStatus] = useState('')
   const [agentLogs, setAgentLogs] = useState<AgentLog[]>([])
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [results, setResults] = useState<any[]>([])
+  const [showResults, setShowResults] = useState(false)
+  const abortControllerRef = useRef<AbortController | null>(null)
   const logEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -28,6 +32,33 @@ export default function Home() {
       logEndRef.current.scrollIntoView({ behavior: 'smooth' })
     }
   }, [agentLogs])
+
+  // Load sidebar state from localStorage
+  useEffect(() => {
+    const savedState = localStorage.getItem('agentSidebarOpen')
+    if (savedState !== null) {
+      setIsSidebarOpen(savedState === 'true')
+    }
+  }, [])
+
+  function toggleSidebar() {
+    const newState = !isSidebarOpen
+    setIsSidebarOpen(newState)
+    localStorage.setItem('agentSidebarOpen', String(newState))
+  }
+
+  function handleStop() {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      addLog('System', 'Analysis stopped by user', 'info')
+      setLoading(false)
+      setProgress(0)
+      setProgressStatus('Cancelled')
+      setTimeout(() => {
+        setProgressStatus('')
+      }, 3000)
+    }
+  }
 
   function addLog(agent: string, message: string, type: 'info' | 'success' | 'processing', detailedData?: any) {
     const log: AgentLog = {
@@ -79,6 +110,12 @@ export default function Home() {
     setProgress(0)
     setProgressStatus('Initializing AI agents...')
     setAgentLogs([])
+    setResults([])
+    setShowResults(false)
+
+    // Create abort controller
+    const abortController = new AbortController()
+    abortControllerRef.current = abortController
 
     addLog('System', 'Workflow initiated - connecting to real agent pipeline', 'info')
     
@@ -96,6 +133,7 @@ export default function Home() {
       const response = await fetch('/api/analyze-stream', {
         method: 'POST',
         body: formData,
+        signal: abortController.signal,
       })
 
       if (!response.ok) {
@@ -126,29 +164,20 @@ export default function Home() {
                   addLog(data.agent, data.action, logType, data.details)
                   setProgress(prev => Math.min(prev + 3, 90))
                 } else if (data.type === 'progress') {
-                  setProgressStatus(`${data.status} (${data.current}/${data.total})`)
+                  setProgressStatus(`Analyzing opportunity ${data.current} of ${data.total}`)
+                  if (data.currentOpp) {
+                    setProgressStatus(prev => `${prev} - "${data.currentOpp}"`)
+                  }
                   setProgress((data.current / data.total) * 90)
+                } else if (data.type === 'result') {
+                  // Collect results for preview
+                  setResults(prev => [...prev, data.opportunity])
                 } else if (data.type === 'complete') {
                   setProgress(100)
                   setProgressStatus('Complete!')
                   addLog('System', `Analysis complete! ${data.total} opportunities processed.`, 'success')
-                  
-                  // Download the Excel file
-                  const downloadResponse = await fetch('/api/analyze', {
-                    method: 'POST',
-                    body: formData,
-                  })
-                  
-                  if (downloadResponse.ok) {
-                    const blob = await downloadResponse.blob()
-                    const url = URL.createObjectURL(blob)
-                    const link = document.createElement('a')
-                    link.href = url
-                    link.download = 'tagged-opportunities.xlsx'
-                    link.click()
-                    setSuccess('Analysis complete! File downloaded.')
-                    setFile(null)
-                  }
+                  setShowResults(true)
+                  setSuccess(`Analysis complete! ${data.total} opportunities processed.`)
                 } else if (data.type === 'error') {
                   throw new Error(data.message)
                 }
@@ -160,17 +189,54 @@ export default function Home() {
         }
       }
     } catch (err: any) {
+      if (err.name === 'AbortError') {
+        // User cancelled - already handled in handleStop
+        return
+      }
       setError(err instanceof Error ? err.message : 'An error occurred')
+      addLog('System', `Error: ${err instanceof Error ? err.message : 'Unknown error'}`, 'info')
     } finally {
       setLoading(false)
-      setProgress(0)
-      setProgressStatus('')
+      abortControllerRef.current = null
+    }
+  }
+
+  async function handleDownload() {
+    if (!file) return
+    
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      
+      const storedInstructions = localStorage.getItem('customInstructions')
+      if (storedInstructions) {
+        formData.append('customInstructions', storedInstructions)
+      }
+
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        body: formData,
+      })
+      
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = 'tagged-opportunities.xlsx'
+        link.click()
+        setSuccess('Excel file downloaded successfully!')
+      } else {
+        throw new Error('Failed to generate Excel file')
+      }
+    } catch (err: any) {
+      setError(err instanceof Error ? err.message : 'Download failed')
     }
   }
 
   return (
     <div className="app-layout">
-      <div className="main-content with-sidebar">
+      <div className={`main-content ${isSidebarOpen ? 'with-sidebar' : ''}`}>
         <header className="accenture-header">
           <div className="accenture-header-container">
             <div className="accenture-brand">
@@ -183,6 +249,20 @@ export default function Home() {
               <button className="accenture-nav-link active">Analyze</button>
               <button className="accenture-nav-link" onClick={() => router.push('/architecture')}>Architecture</button>
               <button className="accenture-nav-link" onClick={() => router.push('/settings')}>Settings</button>
+              <button 
+                className="activity-toggle-btn" 
+                onClick={toggleSidebar}
+                aria-label={isSidebarOpen ? 'Hide agent activity' : 'Show agent activity'}
+                aria-expanded={isSidebarOpen}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                  <rect x="3" y="3" width="7" height="7" strokeWidth="2" rx="1"/>
+                  <rect x="14" y="3" width="7" height="7" strokeWidth="2" rx="1"/>
+                  <rect x="14" y="14" width="7" height="7" strokeWidth="2" rx="1"/>
+                  <rect x="3" y="14" width="7" height="7" strokeWidth="2" rx="1"/>
+                </svg>
+                {isSidebarOpen ? 'Hide' : 'Show'} Agents
+              </button>
             </nav>
           </div>
         </header>
@@ -267,8 +347,21 @@ export default function Home() {
           {loading && progress > 0 && (
             <div className="progress-container">
               <div className="progress-header">
-                <span>{progressStatus}</span>
-                <span className="progress-percentage">{progress}%</span>
+                <span className="progress-status-text">{progressStatus}</span>
+                <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
+                  <span className="progress-percentage">{progress}%</span>
+                  <button 
+                    className="stop-btn" 
+                    onClick={handleStop}
+                    aria-label="Stop analysis"
+                    title="Stop analysis"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
+                      <rect x="6" y="6" width="12" height="12" strokeWidth="2" fill="currentColor"/>
+                    </svg>
+                    Stop
+                  </button>
+                </div>
               </div>
               <div className="progress-bar">
                 <div 
@@ -279,16 +372,85 @@ export default function Home() {
             </div>
           )}
 
+          {showResults && results.length > 0 && (
+            <div className="results-preview">
+              <div className="results-header">
+                <h2>Analysis Results</h2>
+                <button className="download-excel-btn" onClick={handleDownload}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Download Excel
+                </button>
+              </div>
+              
+              <div className="results-summary">
+                <div className="summary-stat">
+                  <span className="stat-label">Total</span>
+                  <span className="stat-value">{results.length}</span>
+                </div>
+                <div className="summary-stat ai">
+                  <span className="stat-label">AI</span>
+                  <span className="stat-value">{results.filter(r => r.tags.includes('AI')).length}</span>
+                </div>
+                <div className="summary-stat analytics">
+                  <span className="stat-label">Analytics</span>
+                  <span className="stat-value">{results.filter(r => r.tags.includes('Analytics')).length}</span>
+                </div>
+                <div className="summary-stat data">
+                  <span className="stat-label">Data</span>
+                  <span className="stat-value">{results.filter(r => r.tags.includes('Data')).length}</span>
+                </div>
+              </div>
+
+              <div className="results-table-container">
+                <table className="results-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Opportunity Name</th>
+                      <th>Tags</th>
+                      <th>Confidence</th>
+                      <th>Rationale</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {results.slice(0, 10).map((result, idx) => (
+                      <tr key={idx}>
+                        <td>{result.id}</td>
+                        <td>{result.dealName}</td>
+                        <td>
+                          <div className="tags-cell">
+                            {result.tags.map((tag: string, i: number) => (
+                              <span key={i} className={`tag tag-${tag.toLowerCase()}`}>{tag}</span>
+                            ))}
+                            {result.tags.length === 0 && <span className="tag tag-none">None</span>}
+                          </div>
+                        </td>
+                        <td>{result.confidence}%</td>
+                        <td className="rationale-cell">{result.rationale}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {results.length > 10 && (
+                  <p className="table-footer">Showing 10 of {results.length} results. Download Excel for full report.</p>
+                )}
+              </div>
+            </div>
+          )}
+
           <footer>
             <p>Powered by OpenAI GPT-4o-mini • AI-driven opportunity analysis</p>
           </footer>
         </div>
       </div>
 
-      <div className="agent-sidebar">
-        <div className="sidebar-header">
-          <h3>Agent Activity</h3>
-        </div>
+      {isSidebarOpen && (
+        <div className="agent-sidebar">
+          <div className="sidebar-header">
+            <h3>Agent Activity</h3>
+          </div>
         <div className="agent-logs">
           {agentLogs.length === 0 ? (
             <div className="no-logs">
@@ -327,6 +489,7 @@ export default function Home() {
           <div ref={logEndRef} />
         </div>
       </div>
+      )}
     </div>
   )
 }
