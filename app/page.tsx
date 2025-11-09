@@ -23,7 +23,7 @@ export default function Home() {
   const [progress, setProgress] = useState(0)
   const [progressStatus, setProgressStatus] = useState('')
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const selectedFile = e.target.files?.[0]
     if (selectedFile) {
       if (!selectedFile.name.endsWith('.xlsx') && !selectedFile.name.endsWith('.xls')) {
@@ -36,7 +36,7 @@ export default function Home() {
     }
   }
 
-  const handleAnalyze = async () => {
+  async function handleAnalyze() {
     if (!file) {
       setError('Please select a file first')
       return
@@ -101,7 +101,7 @@ export default function Home() {
     }
   }
 
-  const handleDownloadExcel = async () => {
+  async function handleDownloadExcel() {
     if (results.length === 0) return
 
     try {
@@ -123,12 +123,12 @@ export default function Home() {
       link.href = url
       link.download = 'tagged-opportunities.xlsx'
       link.click()
-    } catch (err) {
+    } catch (err: any) {
       setError(err instanceof Error ? err.message : 'Failed to download Excel file')
     }
   }
 
-  const handleNewAnalysis = () => {
+  function handleNewAnalysis() {
     setShowResults(false)
     setResults([])
     setFile(null)
