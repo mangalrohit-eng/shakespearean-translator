@@ -382,48 +382,50 @@ export default function ArchitecturePage() {
                       <span className="detail-value">{agent.details.role}</span>
                     </div>
                     
-                    {agent.details.llm && (
+                    {'llm' in agent.details && agent.details.llm && (
                       <>
                         <div className="detail-row">
                           <span className="detail-label">LLM:</span>
                           <span className="detail-value">{agent.details.llm}</span>
                         </div>
-                        <div className="detail-row">
-                          <span className="detail-label">Temperature:</span>
-                          <span className="detail-value">{agent.details.temperature}</span>
-                        </div>
+                        {'temperature' in agent.details && (
+                          <div className="detail-row">
+                            <span className="detail-label">Temperature:</span>
+                            <span className="detail-value">{agent.details.temperature}</span>
+                          </div>
+                        )}
                       </>
                     )}
                     
-                    {agent.details.input && (
+                    {'input' in agent.details && agent.details.input && (
                       <div className="detail-row">
                         <span className="detail-label">Input:</span>
                         <span className="detail-value">{agent.details.input}</span>
                       </div>
                     )}
                     
-                    {agent.details.output && (
+                    {'output' in agent.details && agent.details.output && (
                       <div className="detail-row">
                         <span className="detail-label">Output:</span>
                         <span className="detail-value">{agent.details.output}</span>
                       </div>
                     )}
                     
-                    {agent.details.library && (
+                    {'library' in agent.details && agent.details.library && (
                       <div className="detail-row">
                         <span className="detail-label">Library:</span>
                         <span className="detail-value">{agent.details.library}</span>
                       </div>
                     )}
                     
-                    {agent.details.tech && (
+                    {'tech' in agent.details && agent.details.tech && (
                       <div className="detail-row">
                         <span className="detail-label">Tech:</span>
                         <span className="detail-value">{agent.details.tech}</span>
                       </div>
                     )}
                     
-                    {agent.details.tasks && (
+                    {'tasks' in agent.details && agent.details.tasks && (
                       <div className="detail-tasks">
                         <span className="detail-label">Tasks:</span>
                         <ul>
@@ -434,7 +436,7 @@ export default function ArchitecturePage() {
                       </div>
                     )}
                     
-                    {agent.details.outputs && (
+                    {'outputs' in agent.details && agent.details.outputs && (
                       <div className="detail-tasks">
                         <span className="detail-label">Outputs:</span>
                         <ul>
