@@ -67,13 +67,13 @@ export default function Home() {
     to?: string,
     details?: string
   ) => {
-    const log: AgentLog = {
+    const log: any = {
       id: Date.now().toString() + Math.random(),
       timestamp: new Date().toLocaleTimeString(),
       agent,
       message,
-      type: logType as 'info' | 'success' | 'processing',
-      agentType: agentType as 'orchestrator' | 'agent' | 'tool' | undefined,
+      type: logType,
+      agentType,
       from,
       to,
       details,
