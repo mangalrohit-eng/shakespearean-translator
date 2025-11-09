@@ -176,6 +176,19 @@ export default function Home() {
             <p className="hero-subtitle">Analyze business opportunities using advanced AI to identify Data, AI, and Analytics potential</p>
           </div>
 
+          <div className="page-instructions">
+            <h3>How to Use This Tool</h3>
+            <p>
+              Upload an Excel file containing business opportunities to automatically analyze and tag them for Data, AI, and Analytics relevance. 
+              Our multi-agent AI system will filter for US-Comms & Media opportunities, analyze each one using GPT-4o-mini, and generate an Excel report with tags, confidence scores, and rationale.
+            </p>
+            <ul>
+              <li><strong>Step 1:</strong> Upload your Excel file with opportunity data</li>
+              <li><strong>Step 2:</strong> Watch as our AI agents process and analyze the data in real-time (check the activity sidebar)</li>
+              <li><strong>Step 3:</strong> Download the tagged Excel file with AI-generated insights</li>
+            </ul>
+          </div>
+
           {error && <div className="error">{error}</div>}
           {success && <div className="success">{success}</div>}
 

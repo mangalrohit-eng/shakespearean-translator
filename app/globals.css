@@ -401,6 +401,69 @@ body {
   margin: 0;
 }
 
+/* Page Instructions Box */
+.page-instructions {
+  background: linear-gradient(135deg, #F8F8FF 0%, #F0F0F8 100%);
+  border-left: 4px solid var(--accenture-purple);
+  padding: 24px 32px;
+  border-radius: 8px;
+  margin-bottom: 32px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.page-instructions h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--accenture-black);
+  margin: 0 0 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-instructions p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--accenture-dark-gray);
+  margin-bottom: 16px;
+}
+
+.page-instructions p:last-of-type {
+  margin-bottom: 0;
+}
+
+.page-instructions ul {
+  margin: 16px 0 0 0;
+  padding-left: 24px;
+  list-style: none;
+}
+
+.page-instructions ul li {
+  position: relative;
+  padding-left: 8px;
+  margin-bottom: 12px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--accenture-dark-gray);
+}
+
+.page-instructions ul li::before {
+  content: "→";
+  position: absolute;
+  left: -16px;
+  color: var(--accenture-purple);
+  font-weight: bold;
+}
+
+.page-instructions ul li:last-child {
+  margin-bottom: 0;
+}
+
+.page-instructions strong {
+  color: var(--accenture-black);
+  font-weight: 600;
+}
+
 /* Header */
 h1 {
   font-size: 2.5rem;

@@ -41,8 +41,22 @@ export default function ArchitecturePage() {
         </div>
       </header>
 
+      <div className="container" style={{marginTop: '40px'}}>
+        <div className="page-instructions">
+          <h3>About This Architecture</h3>
+          <p>
+            This page visualizes the LangGraph multi-agent system that powers our opportunity analysis. 
+            Our workflow uses four specialized AI agents, each powered by GPT-4o-mini, working together to process your data intelligently.
+          </p>
+          <p>
+            <strong>What you'll see:</strong> The Orchestrator coordinates the entire workflow, dispatching tasks to specialized agents (Excel Reader, Filter, and Analyzer). 
+            Each agent uses AI reasoning to make decisions, and they communicate through structured messages. Hover over each agent to learn more about their role.
+          </p>
+        </div>
+      </div>
+
       {/* Main Architecture - Above the Fold */}
-      <div className="architecture-flow" style={{marginTop: '80px'}}>
+      <div className="architecture-flow" style={{marginTop: '40px'}}>
         
         {/* START Node */}
         <div className="agent-node-compact start">
