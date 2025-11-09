@@ -9,6 +9,7 @@ interface AgentLog {
   agent: string
   message: string
   type: 'info' | 'success' | 'processing'
+  detailedData?: any
 }
 
 export default function Home() {
@@ -20,6 +21,7 @@ export default function Home() {
   const [progress, setProgress] = useState(0)
   const [progressStatus, setProgressStatus] = useState('')
   const [agentLogs, setAgentLogs] = useState<AgentLog[]>([])
+  const [selectedLog, setSelectedLog] = useState<AgentLog | null>(null)
   const logEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -28,13 +30,14 @@ export default function Home() {
     }
   }, [agentLogs])
 
-  function addLog(agent: string, message: string, type: 'info' | 'success' | 'processing') {
+  function addLog(agent: string, message: string, type: 'info' | 'success' | 'processing', detailedData?: any) {
     const log: AgentLog = {
       id: Date.now().toString() + Math.random(),
       timestamp: new Date().toLocaleTimeString(),
       agent,
       message,
-      type
+      type,
+      detailedData
     }
     setAgentLogs(prev => [...prev, log])
   }
@@ -105,7 +108,14 @@ export default function Home() {
       }, 1200)
       
       setTimeout(() => {
-        addLog('OrchestratorAgent', '→ Dispatching ExcelReaderAgent with task: Parse uploaded Excel file', 'info')
+        addLog('OrchestratorAgent', '→ Dispatching ExcelReaderAgent with task: Parse uploaded Excel file', 'info', {
+          task: 'parseExcel',
+          target: 'ExcelReaderAgent',
+          payload: {
+            fileBuffer: 'ArrayBuffer (binary data)',
+            instructions: 'Extract all rows with columns: ID, Client Name, Opp Name, Client Group, Deal Size, Total'
+          }
+        })
       }, 1500)
       
       setTimeout(() => {
@@ -118,7 +128,14 @@ export default function Home() {
       }, 2300)
       
       setTimeout(() => {
-        addLog('ExcelReaderAgent', '→ Sending parsed data back to Orchestrator (rows extracted)', 'success')
+        addLog('ExcelReaderAgent', '→ Sending parsed data back to Orchestrator (rows extracted)', 'success', {
+          status: 'complete',
+          data: {
+            totalRows: 150,
+            columns: ['ID', 'Client Name', 'Opp Name', 'Client Group', 'Deal Size', 'Total'],
+            sampleRow: { ID: '001', 'Client Name': 'ABC Corp', 'Opp Name': 'AI Modernization', 'Client Group': 'US-Comms & Media' }
+          }
+        })
       }, 2800)
       
       setTimeout(() => {
@@ -143,7 +160,18 @@ export default function Home() {
       }, 4500)
       
       setTimeout(() => {
-        addLog('FilterAgent', '→ Sending filtered opportunities back to Orchestrator', 'success')
+        addLog('FilterAgent', '→ Sending filtered opportunities back to Orchestrator', 'success', {
+          status: 'complete',
+          data: {
+            originalCount: 150,
+            filteredCount: 45,
+            criteria: 'Client Group = "US-Comms & Media"',
+            sampleOpportunities: [
+              { ID: '001', 'Client Name': 'ABC Corp', 'Opp Name': 'AI Modernization' },
+              { ID: '007', 'Client Name': 'XYZ Media', 'Opp Name': 'Data Analytics Platform' }
+            ]
+          }
+        })
       }, 5000)
       
       setTimeout(() => {
@@ -344,7 +372,21 @@ export default function Home() {
               <div key={log.id} className={`log-entry log-${log.type}`}>
                 <div className="log-header">
                   <span className="log-agent">{log.agent}</span>
-                  <span className="log-time">{log.timestamp}</span>
+                  <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
+                    {log.detailedData && (
+                      <button 
+                        className="log-details-btn"
+                        onClick={() => setSelectedLog(log)}
+                        title="View detailed data"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14">
+                          <circle cx="12" cy="12" r="10" strokeWidth="2"/>
+                          <path d="M12 16v-4M12 8h.01" strokeWidth="2" strokeLinecap="round"/>
+                        </svg>
+                      </button>
+                    )}
+                    <span className="log-time">{log.timestamp}</span>
+                  </div>
                 </div>
                 <div className={getMessageClass(log.message)}>{log.message}</div>
               </div>
@@ -353,6 +395,41 @@ export default function Home() {
           <div ref={logEndRef} />
         </div>
       </div>
+
+      {selectedLog && (
+        <div className="modal-overlay" onClick={() => setSelectedLog(null)}>
+          <div className="modal-content agent-data-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <h2>Agent Communication Details</h2>
+                <p style={{fontSize: '14px', color: '#666', margin: '4px 0 0 0'}}>
+                  {selectedLog.agent} • {selectedLog.timestamp}
+                </p>
+              </div>
+              <button className="modal-close" onClick={() => setSelectedLog(null)}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
+                  <path d="M6 6l12 12M6 18L18 6" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="agent-message-box">
+                <h4>Message</h4>
+                <p>{selectedLog.message}</p>
+              </div>
+              
+              {selectedLog.detailedData && (
+                <div className="agent-data-box">
+                  <h4>Data Payload</h4>
+                  <pre className="data-payload">
+                    {JSON.stringify(selectedLog.detailedData, null, 2)}
+                  </pre>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

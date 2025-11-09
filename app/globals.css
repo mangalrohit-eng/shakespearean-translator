@@ -318,6 +318,30 @@ body {
   font-family: monospace;
 }
 
+.log-details-btn {
+  background: rgba(161, 0, 255, 0.2);
+  border: 1px solid rgba(161, 0, 255, 0.4);
+  border-radius: 4px;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  width: 20px;
+  height: 20px;
+}
+
+.log-details-btn:hover {
+  background: rgba(161, 0, 255, 0.4);
+  border-color: var(--accenture-purple);
+  transform: scale(1.1);
+}
+
+.log-details-btn svg {
+  stroke: var(--accenture-purple);
+}
+
 .log-message {
   font-size: 0.875rem;
   line-height: 1.5;
@@ -2363,6 +2387,78 @@ footer {
   padding: 32px;
   overflow-y: auto;
   flex: 1;
+}
+
+/* Agent Data Modal Specific Styles */
+.agent-data-modal {
+  max-width: 700px;
+}
+
+.agent-message-box {
+  background: linear-gradient(135deg, #F0F0F8 0%, #FAFAFA 100%);
+  border-left: 4px solid var(--accenture-purple);
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.agent-message-box h4 {
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--accenture-purple);
+  margin: 0 0 12px 0;
+}
+
+.agent-message-box p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--accenture-dark-gray);
+  margin: 0;
+}
+
+.agent-data-box {
+  background: #1A1A1A;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #333;
+}
+
+.agent-data-box h4 {
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--accenture-purple);
+  margin: 0 0 16px 0;
+}
+
+.data-payload {
+  background: #0A0A0A;
+  color: #E0E0E0;
+  padding: 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-x: auto;
+  font-family: 'Courier New', monospace;
+  margin: 0;
+  border: 1px solid #333;
+}
+
+.data-payload::-webkit-scrollbar {
+  height: 8px;
+}
+
+.data-payload::-webkit-scrollbar-track {
+  background: #1A1A1A;
+  border-radius: 4px;
+}
+
+.data-payload::-webkit-scrollbar-thumb {
+  background: var(--accenture-purple);
+  border-radius: 4px;
 }
 
 .analytics-section {
