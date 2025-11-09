@@ -353,6 +353,12 @@ export default function Home() {
                 </svg>
                 Analyze
               </button>
+              <button className="nav-item" onClick={() => router.push('/architecture')}>
+                <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 13a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1v-6z" strokeWidth="2"/>
+                </svg>
+                Architecture
+              </button>
               <button className="nav-item" onClick={() => router.push('/settings')}>
                 <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" strokeWidth="2"/>
