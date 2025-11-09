@@ -9,14 +9,14 @@ import { analyzerAgent } from './analyzer-agent'
  * Determine which node to execute next based on current state
  */
 
-function shouldContinueAfterExcelRead(state: WorkflowState): string {
+function shouldContinueAfterExcelRead(state: WorkflowState): typeof END | 'filter' {
   // If errors occurred, end the workflow
-  if (state.errors.length > 0) {
+  if (state.errors && state.errors.length > 0) {
     return END
   }
   
   // If no data was extracted, end
-  if (state.rawData.length === 0) {
+  if (!state.rawData || state.rawData.length === 0) {
     return END
   }
   
@@ -24,14 +24,14 @@ function shouldContinueAfterExcelRead(state: WorkflowState): string {
   return 'filter'
 }
 
-function shouldContinueAfterFilter(state: WorkflowState): string {
+function shouldContinueAfterFilter(state: WorkflowState): typeof END | 'analyzer' {
   // If errors occurred, end the workflow
-  if (state.errors.length > 0) {
+  if (state.errors && state.errors.length > 0) {
     return END
   }
   
   // If no opportunities found after filtering, end
-  if (state.filteredOpportunities.length === 0) {
+  if (!state.filteredOpportunities || state.filteredOpportunities.length === 0) {
     return END
   }
   
@@ -39,7 +39,7 @@ function shouldContinueAfterFilter(state: WorkflowState): string {
   return 'analyzer'
 }
 
-function shouldContinueAfterAnalyzer(state: WorkflowState): string {
+function shouldContinueAfterAnalyzer(state: WorkflowState): typeof END {
   // After analysis, always end (for now)
   // Could extend to add export agent here
   return END
@@ -73,23 +73,15 @@ export function createWorkflowGraph() {
   workflow.addNode('filter', filterAgent)
   workflow.addNode('analyzer', analyzerAgent)
 
-  // Set entry point
-  workflow.addEdge('__start__', 'excelReader')
+  // Set entry point - first node to execute
+  workflow.setEntryPoint('excelReader')
 
   // Add conditional edges (routing)
-  workflow.addConditionalEdges('excelReader', shouldContinueAfterExcelRead, {
-    filter: 'filter',
-    [END]: END,
-  })
+  workflow.addConditionalEdges('excelReader', shouldContinueAfterExcelRead)
 
-  workflow.addConditionalEdges('filter', shouldContinueAfterFilter, {
-    analyzer: 'analyzer',
-    [END]: END,
-  })
+  workflow.addConditionalEdges('filter', shouldContinueAfterFilter)
 
-  workflow.addConditionalEdges('analyzer', shouldContinueAfterAnalyzer, {
-    [END]: END,
-  })
+  workflow.addConditionalEdges('analyzer', shouldContinueAfterAnalyzer)
 
   return workflow
 }
