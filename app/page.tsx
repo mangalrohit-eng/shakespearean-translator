@@ -10,6 +10,8 @@ export default function Home() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [results, setResults] = useState<any[]>([])
+  const [progress, setProgress] = useState(0)
+  const [progressStatus, setProgressStatus] = useState('')
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
@@ -33,15 +35,35 @@ export default function Home() {
     setLoading(true)
     setError('')
     setSuccess('')
+    setProgress(0)
+    setProgressStatus('Initializing AI agents...')
 
     try {
       const formData = new FormData()
       formData.append('file', file)
 
+      // Simulate progress updates
+      const progressInterval = setInterval(() => {
+        setProgress(prev => {
+          if (prev < 90) return prev + 10
+          return prev
+        })
+      }, 500)
+
+      // Update status messages
+      setTimeout(() => setProgressStatus('Orchestrator planning workflow...'), 500)
+      setTimeout(() => setProgressStatus('Excel Reader parsing file...'), 1500)
+      setTimeout(() => setProgressStatus('Filter Agent identifying opportunities...'), 3000)
+      setTimeout(() => setProgressStatus('Analyzer Agent tagging with AI...'), 5000)
+
       const response = await fetch('/api/analyze', {
         method: 'POST',
         body: formData,
       })
+
+      clearInterval(progressInterval)
+      setProgress(100)
+      setProgressStatus('Complete!')
 
       if (!response.ok) {
         const data = await response.json()
@@ -61,6 +83,8 @@ export default function Home() {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setLoading(false)
+      setProgress(0)
+      setProgressStatus('')
     }
   }
 
@@ -146,6 +170,21 @@ export default function Home() {
               </button>
             </div>
           </div>
+
+          {loading && progress > 0 && (
+            <div className="progress-container">
+              <div className="progress-header">
+                <span>{progressStatus}</span>
+                <span className="progress-percentage">{progress}%</span>
+              </div>
+              <div className="progress-bar">
+                <div 
+                  className="progress-fill" 
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
+          )}
 
           <div className="info-box-compact">
             <strong>How it works:</strong> Filters US-Comms & Media opportunities • AI-powered tagging • Exports results

@@ -138,17 +138,36 @@ export default function SettingsPage() {
 
   return (
     <div className="settings-container">
-      <div className="settings-header">
-        <div>
-          <h1>⚙ Analysis Configuration</h1>
-          <p className="subtitle">
-            Define custom rules for identifying AI, Analytics, and Data opportunities
-          </p>
+      {/* Accenture Header with Navigation */}
+      <header className="accenture-header">
+        <div className="accenture-header-container">
+          <div className="accenture-brand">
+            <svg className="accenture-logo-svg" viewBox="0 0 120 40" fill="none">
+              <text x="0" y="28" fill="currentColor" fontSize="24" fontWeight="300" letterSpacing="-0.5">accenture</text>
+              <path d="M115 8 L120 12 L115 16" stroke="#A100FF" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <nav className="accenture-nav">
+            <button className="accenture-nav-link" onClick={() => router.push('/')}>
+              Analyze
+            </button>
+            <button className="accenture-nav-link" onClick={() => router.push('/architecture')}>
+              Architecture
+            </button>
+            <button className="accenture-nav-link active" onClick={() => router.push('/settings')}>
+              Settings
+            </button>
+          </nav>
         </div>
-        <div className="header-actions">
-          <button className="back-btn" onClick={() => router.push('/')}>
-            ← Back to Analyzer
-          </button>
+      </header>
+
+      <div className="container">
+        <div className="page-hero">
+          <h1>Analysis Configuration</h1>
+          <p className="hero-subtitle">Define custom rules for identifying AI, Analytics, and Data opportunities</p>
+        </div>
+        
+        <div className="header-actions" style={{ marginBottom: '24px', display: 'flex', justifyContent: 'flex-end' }}>
           <button className="reset-btn" onClick={handleReset}>
             Reset to Defaults
           </button>

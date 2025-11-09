@@ -18,17 +18,35 @@ export default function ArchitecturePage() {
 
   return (
     <div className="architecture-page">
-      {/* Compact Header */}
-      <header className="arch-header-compact">
-        <button className="back-btn-compact" onClick={() => router.push('/')}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
-            <path d="M19 12H5M12 19l-7-7 7-7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Back
-        </button>
-        <h1>LangGraph Multi-Agent Architecture</h1>
-        <p className="subtitle-compact">Real-time AI workflow with agent communication</p>
+      {/* Accenture Header with Navigation */}
+      <header className="accenture-header">
+        <div className="accenture-header-container">
+          <div className="accenture-brand">
+            <svg className="accenture-logo-svg" viewBox="0 0 120 40" fill="none">
+              <text x="0" y="28" fill="currentColor" fontSize="24" fontWeight="300" letterSpacing="-0.5">accenture</text>
+              <path d="M115 8 L120 12 L115 16" stroke="#A100FF" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <nav className="accenture-nav">
+            <button className="accenture-nav-link" onClick={() => router.push('/')}>
+              Analyze
+            </button>
+            <button className="accenture-nav-link active" onClick={() => router.push('/architecture')}>
+              Architecture
+            </button>
+            <button className="accenture-nav-link" onClick={() => router.push('/settings')}>
+              Settings
+            </button>
+          </nav>
+        </div>
       </header>
+
+      <div className="container">
+        <div className="page-hero">
+          <h1>LangGraph Multi-Agent Architecture</h1>
+          <p className="hero-subtitle">Real-time AI workflow with agent communication</p>
+        </div>
+      </div>
 
       {/* Main Architecture - Above the Fold */}
       <div className="architecture-flow">
