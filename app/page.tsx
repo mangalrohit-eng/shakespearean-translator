@@ -330,7 +330,24 @@ export default function Home() {
               <div className="app-title">Opportunity Intelligence Platform</div>
             </div>
             <nav className="header-nav">
-              <button className={`nav-item ${!showResults ? 'active' : ''}`}>
+              <button 
+                className={`nav-item ${!showResults ? 'active' : ''}`}
+                onClick={() => {
+                  if (showResults) {
+                    // Clear results and go back to upload view
+                    setShowResults(false)
+                    setResults([])
+                    setFile(null)
+                    setError('')
+                    setSuccess('')
+                    setProgress(null)
+                    setAgents([])
+                    setAgentLogs([])
+                  }
+                  // Scroll to top
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                }}
+              >
                 <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" strokeWidth="2" strokeLinecap="round"/>
                 </svg>
