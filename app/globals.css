@@ -3372,20 +3372,28 @@ select:focus-visible {
 }
 
 .agent-sidebar.collapsed .sidebar-collapse-btn {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  background: rgba(161, 0, 255, 0.15);
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  background: rgba(161, 0, 255, 0.3) !important;
   border-radius: 8px;
   width: 40px;
   height: 40px;
-  display: flex;
+  display: flex !important;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 8px rgba(161, 0, 255, 0.3);
+}
+
+.agent-sidebar.collapsed .sidebar-collapse-btn svg {
+  stroke: rgba(255, 255, 255, 0.95);
+  width: 20px;
+  height: 20px;
 }
 
 .agent-sidebar.collapsed .sidebar-collapse-btn:hover {
-  background: rgba(161, 0, 255, 0.25);
+  background: rgba(161, 0, 255, 0.5) !important;
+  box-shadow: 0 4px 12px rgba(161, 0, 255, 0.4);
 }
 
 .sidebar-collapse-btn {
@@ -3418,26 +3426,27 @@ select:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
-  min-width: 18px;
-  min-height: 18px;
-  padding: 0;
-  margin-left: 6px;
-  background: transparent;
-  border: 1.5px solid rgba(161, 0, 255, 0.4);
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  padding: 2px;
+  margin-left: 8px;
+  background: rgba(161, 0, 255, 0.08);
+  border: 1.5px solid rgba(161, 0, 255, 0.3);
   border-radius: 50%;
   cursor: help;
   transition: all 0.2s;
   position: relative;
-  vertical-align: middle;
+  vertical-align: -2px;
   color: var(--accenture-purple);
   flex-shrink: 0;
 }
 
 .help-tooltip-trigger:hover {
+  background: rgba(161, 0, 255, 0.12);
   border-color: var(--accenture-purple);
-  transform: scale(1.05);
+  transform: scale(1.08);
 }
 
 .help-tooltip-trigger:hover svg {
@@ -3445,8 +3454,9 @@ select:focus-visible {
 }
 
 .help-tooltip-trigger svg {
-  stroke: rgba(161, 0, 255, 0.6);
+  stroke: rgba(161, 0, 255, 0.7);
   transition: stroke 0.2s;
+  display: block;
 }
 
 .tooltip-content {
