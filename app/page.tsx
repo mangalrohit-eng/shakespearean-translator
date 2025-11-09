@@ -44,6 +44,14 @@ export default function Home() {
   const abortControllerRef = useRef<AbortController | null>(null)
   const logEndRef = useRef<HTMLDivElement>(null)
 
+  // Calculate analytics insights
+  const insights = useMemo(() => {
+    if (results.length > 0) {
+      return generateInsights(results)
+    }
+    return null
+  }, [results])
+
   // Auto-scroll logs to bottom
   useEffect(() => {
     if (logEndRef.current) {
@@ -505,82 +513,83 @@ export default function Home() {
               </button>
             </div>
             <div className="modal-body">
-              {useMemo(() => {
-                const insights = generateInsights(results);
-                return (
-                  <>
-                    {/* Client Breakdown */}
-                    <div className="analytics-section">
-                      <h3>Top Clients</h3>
-                      <div className="client-breakdown">
-                        {insights.clientBreakdown.slice(0, 5).map((client, idx) => (
-                          <div key={idx} className="client-row">
-                            <div className="client-info">
-                              <strong>{client.clientName}</strong>
-                              <span className="client-total">{client.total} opportunities</span>
-                            </div>
-                            <div className="client-tags">
-                              {client.aiCount > 0 && <span className="mini-tag ai">AI: {client.aiCount}</span>}
-                              {client.analyticsCount > 0 && <span className="mini-tag analytics">Analytics: {client.analyticsCount}</span>}
-                              {client.dataCount > 0 && <span className="mini-tag data">Data: {client.dataCount}</span>}
-                            </div>
+              {insights ? (
+                <>
+                  {/* Client Breakdown */}
+                  <div className="analytics-section">
+                    <h3>Top Clients</h3>
+                    <div className="client-breakdown">
+                      {insights.clientBreakdown.slice(0, 5).map((client, idx) => (
+                        <div key={idx} className="client-row">
+                          <div className="client-info">
+                            <strong>{client.clientName}</strong>
+                            <span className="client-total">{client.total} opportunities</span>
                           </div>
-                        ))}
-                      </div>
+                          <div className="client-tags">
+                            {client.aiCount > 0 && <span className="mini-tag ai">AI: {client.aiCount}</span>}
+                            {client.analyticsCount > 0 && <span className="mini-tag analytics">Analytics: {client.analyticsCount}</span>}
+                            {client.dataCount > 0 && <span className="mini-tag data">Data: {client.dataCount}</span>}
+                          </div>
+                        </div>
+                      ))}
                     </div>
+                  </div>
 
-                    {/* Confidence Distribution */}
-                    <div className="analytics-section">
-                      <h3>Confidence Distribution</h3>
-                      <div className="confidence-chart">
-                        <div className="conf-bar">
-                          <span>High (80-100%)</span>
-                          <div className="conf-bar-fill" style={{width: `${(insights.confidenceDistribution.high / results.length) * 100}%`, background: 'var(--success-green)'}}>
-                            {insights.confidenceDistribution.high}
-                          </div>
+                  {/* Confidence Distribution */}
+                  <div className="analytics-section">
+                    <h3>Confidence Distribution</h3>
+                    <div className="confidence-chart">
+                      <div className="conf-bar">
+                        <span>High (80-100%)</span>
+                        <div className="conf-bar-fill" style={{width: `${(insights.confidenceDistribution.high / results.length) * 100}%`, background: 'var(--success-green)'}}>
+                          {insights.confidenceDistribution.high}
                         </div>
-                        <div className="conf-bar">
-                          <span>Medium (50-79%)</span>
-                          <div className="conf-bar-fill" style={{width: `${(insights.confidenceDistribution.medium / results.length) * 100}%`, background: 'var(--warning-orange)'}}>
-                            {insights.confidenceDistribution.medium}
-                          </div>
+                      </div>
+                      <div className="conf-bar">
+                        <span>Medium (50-79%)</span>
+                        <div className="conf-bar-fill" style={{width: `${(insights.confidenceDistribution.medium / results.length) * 100}%`, background: 'var(--warning-orange)'}}>
+                          {insights.confidenceDistribution.medium}
                         </div>
-                        <div className="conf-bar">
-                          <span>Low (0-49%)</span>
-                          <div className="conf-bar-fill" style={{width: `${(insights.confidenceDistribution.low / results.length) * 100}%`, background: 'var(--accenture-gray)'}}>
-                            {insights.confidenceDistribution.low}
-                          </div>
+                      </div>
+                      <div className="conf-bar">
+                        <span>Low (0-49%)</span>
+                        <div className="conf-bar-fill" style={{width: `${(insights.confidenceDistribution.low / results.length) * 100}%`, background: 'var(--accenture-gray)'}}>
+                          {insights.confidenceDistribution.low}
                         </div>
                       </div>
                     </div>
+                  </div>
 
-                    {/* Tag Co-occurrence */}
-                    <div className="analytics-section">
-                      <h3>Tag Combinations</h3>
-                      <div className="tag-combos">
-                        {insights.tagCoOccurrence.slice(0, 6).map((combo, idx) => (
-                          <div key={idx} className="combo-item">
-                            <span className="combo-label">{combo.combination}</span>
-                            <span className="combo-value">{combo.count} ({combo.percentage}%)</span>
-                          </div>
-                        ))}
-                      </div>
+                  {/* Tag Co-occurrence */}
+                  <div className="analytics-section">
+                    <h3>Tag Combinations</h3>
+                    <div className="tag-combos">
+                      {insights.tagCoOccurrence.slice(0, 6).map((combo, idx) => (
+                        <div key={idx} className="combo-item">
+                          <span className="combo-label">{combo.combination}</span>
+                          <span className="combo-value">{combo.count} ({combo.percentage}%)</span>
+                        </div>
+                      ))}
                     </div>
+                  </div>
 
-                    {/* Top Keywords */}
-                    <div className="analytics-section">
-                      <h3>Top Keywords</h3>
-                      <div className="keywords-list">
-                        {insights.topKeywords.slice(0, 10).map((kw, idx) => (
-                          <span key={idx} className="keyword-badge">
-                            {kw.keyword} ({kw.count})
-                          </span>
-                        ))}
-                      </div>
+                  {/* Top Keywords */}
+                  <div className="analytics-section">
+                    <h3>Top Keywords</h3>
+                    <div className="keywords-list">
+                      {insights.topKeywords.slice(0, 10).map((kw, idx) => (
+                        <span key={idx} className="keyword-badge">
+                          {kw.keyword} ({kw.count})
+                        </span>
+                      ))}
                     </div>
-                  </>
-                );
-              }, [results])}
+                  </div>
+                </>
+              ) : (
+                <div style={{padding: '40px', textAlign: 'center', color: 'var(--accenture-gray)'}}>
+                  No analytics data available
+                </div>
+              )}
             </div>
           </div>
         </div>
