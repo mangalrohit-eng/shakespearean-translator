@@ -243,43 +243,46 @@ export default function ArchitecturePage() {
                       </circle>
                     )}
                     
-                    {/* Step number badge */}
-                    <g>
-                      <circle
-                        cx={(fromAgent.x + toAgent.x) / 2}
-                        cy={(fromAgent.y + toAgent.y) / 2 - 25}
-                        r="14"
-                        fill={isActive ? '#a100ff' : 'rgba(161, 0, 255, 0.3)'}
-                        stroke="white"
-                        strokeWidth="2"
-                      />
-                      <text
-                        x={(fromAgent.x + toAgent.x) / 2}
-                        y={(fromAgent.y + toAgent.y) / 2 - 21}
-                        fill="white"
-                        fontSize="12"
-                        fontWeight="700"
-                        textAnchor="middle"
-                      >
-                        {conn.stepNumber}
-                      </text>
-                    </g>
-                    
-                    {/* Connection label with better contrast */}
-                    <text
-                      x={(fromAgent.x + toAgent.x) / 2}
-                      y={(fromAgent.y + toAgent.y) / 2 + 5}
-                      fill="white"
-                      fontSize="12"
-                      fontWeight={isActive ? '700' : '500'}
-                      textAnchor="middle"
-                      className="connection-label"
-                      stroke={isActive ? '#a100ff' : 'rgba(0, 0, 0, 0.8)'}
-                      strokeWidth="3"
-                      paintOrder="stroke"
-                    >
-                      {conn.label}
-                    </text>
+                    {/* Step number badge and label - only show for active step */}
+                    {isActive && (
+                      <g>
+                        {/* Step number badge */}
+                        <circle
+                          cx={(fromAgent.x + toAgent.x) / 2}
+                          cy={(fromAgent.y + toAgent.y) / 2 - 25}
+                          r="14"
+                          fill="#a100ff"
+                          stroke="white"
+                          strokeWidth="2"
+                        />
+                        <text
+                          x={(fromAgent.x + toAgent.x) / 2}
+                          y={(fromAgent.y + toAgent.y) / 2 - 21}
+                          fill="white"
+                          fontSize="12"
+                          fontWeight="700"
+                          textAnchor="middle"
+                        >
+                          {conn.stepNumber}
+                        </text>
+                        
+                        {/* Connection label with better contrast */}
+                        <text
+                          x={(fromAgent.x + toAgent.x) / 2}
+                          y={(fromAgent.y + toAgent.y) / 2 + 5}
+                          fill="white"
+                          fontSize="12"
+                          fontWeight="700"
+                          textAnchor="middle"
+                          className="connection-label"
+                          stroke="#a100ff"
+                          strokeWidth="3"
+                          paintOrder="stroke"
+                        >
+                          {conn.label}
+                        </text>
+                      </g>
+                    )}
                   </g>
                 )
               })}
