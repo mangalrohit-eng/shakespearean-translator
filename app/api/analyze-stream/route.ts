@@ -1,4 +1,4 @@
-import { executeWorkflow } from '@/lib/agents/graph'
+import { executeSimpleWorkflow } from '@/lib/agents/simple-workflow'
 import { WorkflowState } from '@/lib/agents/state'
 import type { CustomInstruction } from '@/lib/agents/analyzer'
 
@@ -47,8 +47,8 @@ export async function POST(request: Request) {
         controller.enqueue(
           encoder.encode(`data: ${JSON.stringify({
             type: 'agent',
-            agent: 'Orchestrator (LangGraph)',
-            action: 'Initializing StateGraph workflow with ExcelReader → Filter → Analyzer agents',
+            agent: 'Orchestrator',
+            action: 'Initializing multi-agent workflow: ExcelReader → Filter → Analyzer',
             status: 'active'
           })}\n\n`)
         )
@@ -58,8 +58,8 @@ export async function POST(request: Request) {
         // Track sent results to avoid duplicates
         const sentResultIds = new Set<string>()
 
-        // Execute the LangGraph workflow with streaming
-        const finalState = await executeWorkflow(
+        // Execute the simple workflow with streaming
+        const finalState = await executeSimpleWorkflow(
           arrayBuffer,
           customInstructions,
           (state: WorkflowState) => {
@@ -120,7 +120,7 @@ export async function POST(request: Request) {
         controller.enqueue(
           encoder.encode(`data: ${JSON.stringify({
             type: 'agent',
-            agent: 'Orchestrator (LangGraph)',
+            agent: 'Orchestrator',
             action: `Workflow complete. All ${finalState.analyzedOpportunities.length} opportunities processed through multi-agent pipeline. Ready for export.`,
             status: 'complete'
           })}\n\n`)
