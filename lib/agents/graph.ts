@@ -72,8 +72,8 @@ export function createWorkflowGraph() {
   workflow.addNode('filter', filterAgent)
   workflow.addNode('analyzer', analyzerAgent)
 
-  // Set entry point - first node to execute
-  workflow.setEntryPoint('excelReader')
+  // Connect __start__ to first node
+  workflow.addEdge('__start__', 'excelReader')
 
   // Add conditional edges (routing) - simple string returns
   workflow.addConditionalEdges('excelReader', shouldContinueAfterExcelRead)
