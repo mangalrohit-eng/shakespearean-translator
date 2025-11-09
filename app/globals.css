@@ -3123,6 +3123,17 @@ select:focus-visible {
   pointer-events: none;
 }
 
+.agent-sidebar.collapsed .sidebar-header {
+  padding: 20px 10px;
+  justify-content: center;
+}
+
+.agent-sidebar.collapsed .sidebar-collapse-btn {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
 .sidebar-collapse-btn {
   background: transparent;
   border: none;
@@ -3153,8 +3164,10 @@ select:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  min-height: 22px;
   padding: 0;
   margin-left: 8px;
   background: transparent;
@@ -3165,6 +3178,7 @@ select:focus-visible {
   position: relative;
   vertical-align: middle;
   color: var(--accenture-purple);
+  flex-shrink: 0;
 }
 
 .help-tooltip-trigger:hover {
@@ -3183,10 +3197,10 @@ select:focus-visible {
 
 .tooltip-content {
   position: absolute;
-  bottom: 100%;
+  top: 100%;
   left: 50%;
   transform: translateX(-50%);
-  margin-bottom: 12px;
+  margin-top: 12px;
   background: white;
   border: 2px solid var(--accenture-purple);
   border-radius: 8px;
@@ -3206,22 +3220,22 @@ select:focus-visible {
 .tooltip-content::before {
   content: '';
   position: absolute;
-  top: 100%;
+  bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
   border: 8px solid transparent;
-  border-top-color: var(--accenture-purple);
+  border-bottom-color: var(--accenture-purple);
 }
 
 .tooltip-content::after {
   content: '';
   position: absolute;
-  top: 100%;
+  bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
   border: 6px solid transparent;
-  border-top-color: white;
-  margin-top: -2px;
+  border-bottom-color: white;
+  margin-bottom: -2px;
 }
 
 .help-tooltip-trigger:hover .tooltip-content {
@@ -3270,4 +3284,11 @@ select:focus-visible {
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
+  line-height: 1.6;
+}
+
+/* Ensure hero doesn't stretch the button */
+.page-hero {
+  position: relative;
+  z-index: 1;
 }
