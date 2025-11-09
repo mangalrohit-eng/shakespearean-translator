@@ -66,25 +66,28 @@ Context:
 - Data-focused: ${dataOpps.length}
 
 Opportunities with details:
-${opportunities.map(o => `• ${o.opportunityName} → ${o.tags.join(', ')} (${Math.round(o.confidence * 100)}% confidence)${o.dealDescription && o.dealDescription.trim() ? ` - ${o.dealDescription}` : ' (no description)'}`).join('\n')}
+${opportunities.map(o => `• ID: ${o.id} | ${o.opportunityName} → ${o.tags.join(', ')} (${Math.round(o.confidence * 100)}% confidence)
+  Reason: ${o.rationale.substring(0, 150)}${o.rationale.length > 150 ? '...' : ''}`).join('\n\n')}
 
 Write a SHORT, DIRECT, CASUAL email with this structure:
 
 Opening: "Found ${opportunities.length} opportunities that are likely Data & AI deals."
 
 List: Show each opportunity with:
-- Opportunity name
-- Suggested tags (${aiOpps.length > 0 ? 'AI' : ''}${analyticsOpps.length > 0 ? ', Analytics' : ''}${dataOpps.length > 0 ? ', Data' : ''})
-- Brief description if available
+- **Opportunity ID** (important for MMS tagging)
+- **Opportunity name**
+- **Suggested tags** (${aiOpps.length > 0 ? 'AI' : ''}${analyticsOpps.length > 0 ? ', Analytics' : ''}${dataOpps.length > 0 ? ', Data' : ''})
+- **Brief reason** for why it was tagged (1-2 sentences from the rationale)
 
 Closing: "Can you please take a look and tag them appropriately in MMS? Let me know if you need help."
 
 Requirements:
 - Keep it brief and conversational, NOT formal
-- Use simple HTML formatting (<p>, <ul>, <li>, <strong>)
-- Include a simple list or table of opportunities
+- Use simple HTML formatting (<p>, <ul>, <li>, <strong>, <table>)
+- Include opportunity ID prominently for easy MMS reference
+- Show brief tagging rationale so they understand why
 - Direct tone, like a quick email from a colleague
-- Maximum 400 words
+- Maximum 500 words
 
 Write the email body (HTML format) without subject line:`
 
@@ -118,15 +121,32 @@ Write the email body (HTML format) without subject line:`
       return `
         <p>Found ${opportunities.length} opportunities that are likely Data & AI deals:</p>
         
-        <ul style="line-height: 1.8;">
-          ${opportunities.map(o => `
-            <li>
-              <strong>${o.opportunityName}</strong> → ${o.tags.length > 0 ? o.tags.join(', ') : 'Untagged'} 
-              (${Math.round(o.confidence * 100)}% confidence)
-              ${o.dealDescription && o.dealDescription.trim() ? `<br/><span style="color: rgba(255, 255, 255, 0.7); font-size: 0.9em;">${o.dealDescription}</span>` : ''}
-            </li>
-          `).join('')}
-        </ul>
+        <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+          <thead>
+            <tr style="background: rgba(161, 0, 255, 0.1); text-align: left;">
+              <th style="padding: 10px; border: 1px solid rgba(161, 0, 255, 0.2);">Opp ID</th>
+              <th style="padding: 10px; border: 1px solid rgba(161, 0, 255, 0.2);">Opportunity Name</th>
+              <th style="padding: 10px; border: 1px solid rgba(161, 0, 255, 0.2);">Tags</th>
+              <th style="padding: 10px; border: 1px solid rgba(161, 0, 255, 0.2);">Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${opportunities.map(o => `
+              <tr>
+                <td style="padding: 10px; border: 1px solid rgba(255, 255, 255, 0.1);"><strong>${o.id}</strong></td>
+                <td style="padding: 10px; border: 1px solid rgba(255, 255, 255, 0.1);">${o.opportunityName}</td>
+                <td style="padding: 10px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                  <span style="background: rgba(161, 0, 255, 0.2); padding: 4px 8px; border-radius: 4px; font-size: 0.85em;">
+                    ${o.tags.length > 0 ? o.tags.join(', ') : 'None'}
+                  </span>
+                </td>
+                <td style="padding: 10px; border: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.9em; color: rgba(255, 255, 255, 0.8);">
+                  ${o.rationale.substring(0, 100)}${o.rationale.length > 100 ? '...' : ''}
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
 
         <p>Can you please take a look and tag them appropriately in MMS? Let me know if you need help.</p>
         
