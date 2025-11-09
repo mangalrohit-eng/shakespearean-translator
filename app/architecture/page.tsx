@@ -11,7 +11,7 @@ export default function ArchitecturePage() {
   // Animate data packets flowing through the system
   useEffect(() => {
     const interval = setInterval(() => {
-      setFlowStep((prev) => (prev + 1) % 4)
+      setFlowStep((prev) => (prev + 1) % 5)
     }, 2000)
     return () => clearInterval(interval)
   }, [])
@@ -45,7 +45,7 @@ export default function ArchitecturePage() {
         <div className="page-hero">
           <h1>Multi-Agent Architecture</h1>
           <p className="hero-subtitle">
-            LangGraph workflow with four AI agents powered by GPT-4o-mini
+            LangGraph workflow with five AI agents powered by GPT-4o-mini
             <button className="help-tooltip-trigger" title="About this architecture">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="12" height="12">
                 <circle cx="12" cy="12" r="10" strokeWidth="2"/>
@@ -53,7 +53,7 @@ export default function ArchitecturePage() {
               </svg>
               <span className="tooltip-content">
                 <strong>How It Works</strong>
-                <p>The Orchestrator coordinates specialized agents (Excel Reader, Filter, Analyzer). Each uses AI reasoning and they communicate via structured messages. Hover over agents to learn more.</p>
+                <p>The Orchestrator coordinates specialized agents (Excel Reader, Filter, Analyzer, Email Composer). Each uses AI reasoning and they communicate via structured messages. Hover over agents to learn more.</p>
               </span>
             </button>
           </p>
@@ -223,6 +223,43 @@ export default function ArchitecturePage() {
           )}
         </div>
 
+        {/* Email Composer Agent */}
+        <div className="agent-node-compact ai-agent">
+          <div className="agent-badge-compact ai">AI AGENT</div>
+          <div className="node-core">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" strokeWidth="2"/>
+            </svg>
+            <span>Email Composer</span>
+          </div>
+          <div className="agent-tooltip">
+            <h4>Email Composer Agent</h4>
+            <p><strong>LLM:</strong> GPT-4o-mini (Creative Writing)</p>
+            <p><strong>Temperature:</strong> 0.7 (Higher for creativity)</p>
+            <p><strong>Role:</strong> Generates personalized emails for D&AI captains</p>
+            <p><strong>Output:</strong> Professional emails with:</p>
+            <ul className="agent-details-list">
+              <li>Executive summaries with key metrics</li>
+              <li>Top opportunity highlights</li>
+              <li>Full opportunity tables</li>
+              <li>Tailored action items per captain</li>
+            </ul>
+            <p><strong>Recipients:</strong> AI Captain, Analytics Captain, Data Captain</p>
+          </div>
+        </div>
+
+        {/* Flow Arrow 5 */}
+        <div className="flow-connector">
+          <svg viewBox="0 0 200 80" preserveAspectRatio="none">
+            <path d="M 0 40 L 200 40" stroke="var(--accenture-purple)" strokeWidth="3" fill="none" markerEnd="url(#arrow)"/>
+          </svg>
+          {flowStep >= 4 && (
+            <div className="data-packet" style={{animation: 'flowPacket 2s ease-in-out'}}>
+              EMAILS
+            </div>
+          )}
+        </div>
+
         {/* END Node */}
         <div className="agent-node-compact end">
           <div className="node-core">
@@ -233,7 +270,7 @@ export default function ArchitecturePage() {
           </div>
           <div className="agent-tooltip">
             <h4>Workflow Complete</h4>
-            <p>Results ready for Excel export with full analysis</p>
+            <p>Results ready for Excel export with full analysis and personalized emails for D&AI captains</p>
           </div>
         </div>
 
@@ -266,13 +303,14 @@ export default function ArchitecturePage() {
           <div className="tech-section">
             <h3>Real Agent Architecture</h3>
             <ul>
-              <li><strong>4 LLM-Powered Agents:</strong> OrchestratorAgent, ExcelReaderAgent, FilterAgent, AnalyzerAgent</li>
+              <li><strong>5 LLM-Powered Agents:</strong> OrchestratorAgent, ExcelReaderAgent, FilterAgent, AnalyzerAgent, EmailComposerAgent</li>
               <li><strong>OrchestratorAgent:</strong> Makes intelligent routing decisions using GPT-4o-mini</li>
               <li><strong>Each agent uses ChatOpenAI:</strong> All powered by GPT-4o-mini</li>
               <li><strong>Agent Communication:</strong> Via BaseMessage[] (HumanMessage, AIMessage)</li>
-              <li><strong>Workflow Steps:</strong> 7 total (Orchestrator runs 4 times between other agents)</li>
+              <li><strong>Workflow Steps:</strong> 8 total (Orchestrator runs 4 times between other agents)</li>
               <li><strong>Orchestrator:</strong> Reviews outputs, decides routing, manages communication</li>
               <li><strong>Agents:</strong> Execute specialized tasks and report back to Orchestrator</li>
+              <li><strong>EmailComposerAgent:</strong> Uses higher temperature (0.7) for creative, personalized email writing</li>
             </ul>
           </div>
           <div className="tech-section">
