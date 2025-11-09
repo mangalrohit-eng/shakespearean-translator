@@ -9,7 +9,7 @@ import { WorkflowState } from './state'
  */
 export async function orchestratorAgent(
   state: WorkflowState,
-  decision: 'initialize' | 'after_excel' | 'after_filter' | 'after_analyzer'
+  decision: 'initialize' | 'after_excel' | 'after_parser' | 'after_analyzer'
 ): Promise<Partial<WorkflowState>> {
   const llm = new ChatOpenAI({
     modelName: 'gpt-4o-mini',
@@ -129,6 +129,7 @@ Provide your routing decision and brief rationale in 2 sentences.`
 
         messages.push(new AIMessage(`OrchestratorAgent: ${decision.content}`))
 
+        
         messages.push(
           new AIMessage(
             `OrchestratorAgent → FilterAgent: Received ${rowCount} opportunity records. Please filter for US-Comms & Media industry and report back with filtered count.`
@@ -142,42 +143,42 @@ Provide your routing decision and brief rationale in 2 sentences.`
         }
       }
 
-      case 'after_filter': {
-        // Orchestrator reviews filtering results
-        const filteredCount = state.filteredOpportunities.length
+      case 'after_parser': {
+        // Orchestrator reviews parsing results
+        const parsedCount = state.filteredOpportunities.length
         const originalCount = state.rawData.length
 
         agentLogs.push({
           agent: 'OrchestratorAgent',
-          action: `Received ${filteredCount} filtered opportunities from FilterAgent (from ${originalCount} total). Evaluating...`,
+          action: `Received ${parsedCount} parsed opportunities from ExcelParserAgent (from ${originalCount} total rows). Evaluating...`,
           status: 'active',
           timestamp: new Date().toISOString(),
         })
 
-        const reviewPrompt = `You are an Orchestrator Agent reviewing filtering results.
+        const reviewPrompt = `You are an Orchestrator Agent reviewing Excel parsing results.
 
-FilterAgent reported:
-- Original records: ${originalCount}
-- Filtered for US-Comms & Media: ${filteredCount}
-- Filter efficiency: ${Math.round((filteredCount / originalCount) * 100)}%
+ExcelParserAgent reported:
+- Original rows: ${originalCount}
+- Successfully parsed opportunities: ${parsedCount}
+- Parse efficiency: ${Math.round((parsedCount / originalCount) * 100)}%
 
 Sample opportunities: ${state.filteredOpportunities
           .slice(0, 3)
-          .map(o => o.oppName)
+          .map(o => o.opportunityName)
           .join(', ')}
 
 Your decision:
-1. If filtered count > 0: Proceed to AnalyzerAgent for AI tagging
-2. If filtered count = 0: Stop workflow (no relevant opportunities)
+1. If parsed count > 0: Proceed to AnalyzerAgent for AI/Analytics/Data tagging
+2. If parsed count = 0: Stop workflow (no valid opportunities)
 
 Provide your routing decision and rationale in 2 sentences.`
 
         const decision = await llm.invoke([new HumanMessage(reviewPrompt)])
 
-        if (filteredCount === 0) {
+        if (parsedCount === 0) {
           agentLogs.push({
             agent: 'OrchestratorAgent',
-            action: `Decision: STOP workflow. No Comms & Media opportunities found.`,
+            action: `Decision: STOP workflow. No valid opportunities found after parsing.`,
             status: 'complete',
             timestamp: new Date().toISOString(),
           })
@@ -188,13 +189,13 @@ Provide your routing decision and rationale in 2 sentences.`
             currentStep: 'orchestrator_stopped',
             messages,
             agentLogs,
-            errors: [...state.errors, 'No Comms & Media opportunities found after filtering'],
+            errors: [...state.errors, 'No valid opportunities found after parsing'],
           }
         }
 
         agentLogs.push({
           agent: 'OrchestratorAgent',
-          action: `Decision: PROCEED to AnalyzerAgent. Dispatching ${filteredCount} opportunities for AI tagging.`,
+          action: `Decision: PROCEED to AnalyzerAgent. Dispatching ${parsedCount} opportunities for AI/Analytics/Data tagging.`,
           status: 'complete',
           timestamp: new Date().toISOString(),
         })
@@ -203,7 +204,7 @@ Provide your routing decision and rationale in 2 sentences.`
 
         messages.push(
           new AIMessage(
-            `OrchestratorAgent → AnalyzerAgent: I'm sending you ${filteredCount} Comms & Media opportunities for AI-powered tagging. Analyze each for AI, Analytics, or Data relevance. Process sequentially and provide detailed rationale.`
+            `OrchestratorAgent → AnalyzerAgent: I'm sending you ${parsedCount} parsed opportunities for AI-powered tagging. Analyze each opportunity name AND description for AI, Analytics, or Data relevance. Process sequentially and provide detailed rationale.`
           )
         )
 

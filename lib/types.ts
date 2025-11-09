@@ -1,31 +1,18 @@
 // Type definitions for the opportunity analyzer
 
 export interface ExcelRow {
-  ID: string
-  'Client Name': string
-  'Opp Name': string
-  Stage: string
-  'Fiscal Period': string
-  Status: string
-  ECSD: string
-  MU: string
-  'Client Group': string
-  'Deal Size': string
-  'D&AI %': string
-  'Gen AI Value': number
-  'D&AI Value': number
-  Total: number
-  'DAI Captain': string
+  [key: string]: any // Allow any columns since we'll parse dynamically
 }
 
 export interface Opportunity {
   id: string
-  clientName: string
-  oppName: string
-  clientGroup: string
-  dealSize: string
-  total: number
-  daiCaptain?: string
+  accountName: string
+  opportunityName: string
+  dealDescription: string
+  industryName?: string
+  dealSize?: string
+  total?: number
+  rawData?: any // Store original row for reference
 }
 
 export interface AnalyzedOpportunity extends Opportunity {
@@ -50,3 +37,11 @@ export interface WorkflowState {
   errors: string[]
 }
 
+// Column mapping identified by the Excel Parsing Agent
+export interface ColumnMapping {
+  dealId: string | null
+  dealName: string | null
+  dealDescription: string | null
+  accountName: string | null
+  industryName: string | null
+}

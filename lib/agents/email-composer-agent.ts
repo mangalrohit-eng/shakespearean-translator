@@ -13,41 +13,41 @@ export async function emailComposerAgent(
 ): Promise<Partial<WorkflowState>> {
   onUpdate?.({
     agent: 'EmailComposerAgent',
-    action: 'Starting email composition for D&AI captains',
+    action: 'Starting email composition grouped by account',
     status: 'active',
     details: {
       totalOpportunities: state.analyzedOpportunities.length
     }
   })
 
-  // Group opportunities by D&AI Captain
-  const opportunitiesByCaptain = state.analyzedOpportunities.reduce((acc, opp) => {
-    const captain = opp.daiCaptain || 'Unassigned'
-    if (!acc[captain]) {
-      acc[captain] = []
+  // Group opportunities by Account Name
+  const opportunitiesByAccount = state.analyzedOpportunities.reduce((acc, opp) => {
+    const account = opp.accountName || 'Unknown Account'
+    if (!acc[account]) {
+      acc[account] = []
     }
-    acc[captain].push(opp)
+    acc[account].push(opp)
     return acc
   }, {} as Record<string, typeof state.analyzedOpportunities>)
 
-  const captainNames = Object.keys(opportunitiesByCaptain)
+  const accountNames = Object.keys(opportunitiesByAccount)
 
   onUpdate?.({
     agent: 'EmailComposerAgent',
-    action: `Identified ${captainNames.length} D&AI captain(s): ${captainNames.join(', ')}`,
+    action: `Identified ${accountNames.length} account(s): ${accountNames.slice(0, 5).join(', ')}${accountNames.length > 5 ? '...' : ''}`,
     status: 'active',
     details: {
-      captains: captainNames,
-      opportunitiesPerCaptain: Object.entries(opportunitiesByCaptain).map(([captain, opps]) => ({
-        captain,
+      accounts: accountNames,
+      opportunitiesPerAccount: Object.entries(opportunitiesByAccount).map(([account, opps]) => ({
+        account,
         count: opps.length
       }))
     }
   })
 
-  // Generate email content using LLM for each captain
-  const generateEmailContent = async (captain: string, opportunities: any[]) => {
-    // Group by tags for better organization within each captain's email
+  // Generate email content using LLM for each account
+  const generateEmailContent = async (account: string, opportunities: any[]) => {
+    // Group by tags for better organization within each account's email
     const aiOpps = opportunities.filter(o => o.tags.includes('AI'))
     const analyticsOpps = opportunities.filter(o => o.tags.includes('Analytics'))
     const dataOpps = opportunities.filter(o => o.tags.includes('Data'))
@@ -56,26 +56,26 @@ export async function emailComposerAgent(
     const totalValue = opportunities.reduce((sum, o) => sum + (o.total || 0), 0)
     const avgConfidence = opportunities.reduce((sum, o) => sum + (o.confidence || 0), 0) / opportunities.length
 
-    const prompt = `You are an AI agent writing a professional executive email for a D&AI Captain named "${captain}".
+    const prompt = `You are an AI agent writing a professional account review email for "${account}".
 
 Context:
-- Captain: ${captain}
+- Account: ${account}
 - Total Opportunities: ${opportunities.length}
 - AI-focused: ${aiOpps.length}
 - Analytics-focused: ${analyticsOpps.length}
 - Data-focused: ${dataOpps.length}
-- Total Deal Value: $${totalValue.toLocaleString()}
+${totalValue > 0 ? `- Total Deal Value: $${totalValue.toLocaleString()}` : ''}
 - Average Confidence Score: ${Math.round(avgConfidence * 100)}%
 
 Opportunities Details:
-${opportunities.slice(0, 10).map(o => `• ${o.oppName} (${o.tags.join(', ')}) - Confidence: ${Math.round(o.confidence * 100)}% - Rationale: ${o.rationale}`).join('\n')}
+${opportunities.slice(0, 10).map(o => `• ${o.opportunityName} (${o.tags.join(', ')}) - Confidence: ${Math.round(o.confidence * 100)}%${o.dealDescription ? ` - ${o.dealDescription.substring(0, 80)}...` : ''}`).join('\n')}
 ${opportunities.length > 10 ? `\n... and ${opportunities.length - 10} more opportunities` : ''}
 
 Write a professional email with the following structure:
-1. **Executive Summary**: Brief overview with key metrics
+1. **Executive Summary**: Brief overview with key metrics for this account
 2. **Opportunity Breakdown**: Organize by AI/Analytics/Data categories
 3. **Top Priorities**: Highlight the 3-5 highest-confidence opportunities
-4. **Next Steps**: Clear action items for the captain
+4. **Next Steps**: Clear action items for the account team
 
 Requirements:
 - Professional tone, concise and executive-ready
@@ -89,7 +89,7 @@ Write the email body (HTML format) without subject line:`
     try {
       onUpdate?.({
         agent: 'EmailComposerAgent',
-        action: `Generating email content for ${captain} (${opportunities.length} opportunities)`,
+        action: `Generating email content for ${account} (${opportunities.length} opportunities)`,
         status: 'active'
       })
 
@@ -98,10 +98,10 @@ Write the email body (HTML format) without subject line:`
 
       onUpdate?.({
         agent: 'EmailComposerAgent',
-        action: `✓ Email generated for ${captain} (${emailBody.length} chars)`,
+        action: `✓ Email generated for ${account} (${emailBody.length} chars)`,
         status: 'active',
         details: {
-          captain,
+          account,
           opportunities: opportunities.length,
           wordCount: emailBody.split(' ').length,
           charCount: emailBody.length
@@ -114,9 +114,8 @@ Write the email body (HTML format) without subject line:`
       
       // Fallback to template if LLM fails
       return `
-        <h3>Executive Summary</h3>
-        <p>Dear ${captain},</p>
-        <p>This report summarizes ${opportunities.length} D&AI opportunities assigned to you, identified from our US Communications & Media portfolio.</p>
+        <h3>Account Review: ${account}</h3>
+        <p>This report summarizes ${opportunities.length} D&AI opportunities identified for ${account} from the Communications & Media portfolio.</p>
         
         <h3>Key Metrics</h3>
         <ul>
@@ -162,12 +161,12 @@ Write the email body (HTML format) without subject line:`
     }
   }
 
-  // Generate emails for each captain
+  // Generate emails for each account
   const emails = []
-  for (const [captain, opportunities] of Object.entries(opportunitiesByCaptain)) {
-    const emailBody = await generateEmailContent(captain, opportunities)
+  for (const [account, opportunities] of Object.entries(opportunitiesByAccount)) {
+    const emailBody = await generateEmailContent(account, opportunities)
     
-    // Get primary tag for this captain's opportunities
+    // Get primary tag for this account's opportunities
     const tagCounts = { AI: 0, Analytics: 0, Data: 0 }
     opportunities.forEach(o => {
       o.tags.forEach((tag: string) => {
@@ -177,9 +176,9 @@ Write the email body (HTML format) without subject line:`
     const primaryTag = Object.entries(tagCounts).sort((a, b) => b[1] - a[1])[0][0]
 
     emails.push({
-      captain,
+      captain: account, // Keep field name for compatibility, but it's actually account name
       tag: primaryTag,
-      subject: `D&AI Opportunity Review - ${captain} (${opportunities.length} Opportunities)`,
+      subject: `D&AI Opportunity Review - ${account} (${opportunities.length} Opportunities)`,
       body: emailBody,
       opportunities
     })
@@ -187,11 +186,11 @@ Write the email body (HTML format) without subject line:`
 
   onUpdate?.({
     agent: 'EmailComposerAgent',
-    action: `✓ Successfully composed ${emails.length} personalized email(s) for D&AI captain(s)`,
+    action: `✓ Successfully composed ${emails.length} personalized email(s) grouped by account`,
     status: 'complete',
     details: {
       totalEmailsGenerated: emails.length,
-      captains: captainNames,
+      accounts: accountNames,
       timestamp: new Date().toISOString()
     }
   })

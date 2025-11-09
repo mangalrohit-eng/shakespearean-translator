@@ -73,7 +73,7 @@ Describe your analysis strategy in 2-3 sentences.`
       // Log processing this specific opportunity
       agentLogs.push({
         agent: 'AnalyzerAgent',
-        action: `Analyzing opportunity ${current}/${totalOpportunities}: "${opp.oppName.substring(0, 60)}${opp.oppName.length > 60 ? '...' : ''}"`,
+        action: `Analyzing opportunity ${current}/${totalOpportunities}: "${opp.opportunityName.substring(0, 60)}${opp.opportunityName.length > 60 ? '...' : ''}"`,
         status: 'active',
         timestamp: new Date().toISOString(),
       })
@@ -88,7 +88,7 @@ Describe your analysis strategy in 2-3 sentences.`
       
       agentLogs.push({
         agent: 'AnalyzerAgent',
-        action: `✓ Completed: "${analyzed.oppName.substring(0, 40)}..." → Tagged: [${tags}] (${analyzed.confidence}% confidence). Rationale: ${shortRationale}...`,
+        action: `✓ Completed: "${analyzed.opportunityName.substring(0, 40)}..." → Tagged: [${tags}] (${analyzed.confidence}% confidence). Rationale: ${shortRationale}...`,
         status: 'complete',
         timestamp: new Date().toISOString(),
         details: {

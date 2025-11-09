@@ -1,7 +1,7 @@
 import { WorkflowState, createInitialState } from './state'
 import { orchestratorAgent } from './orchestrator-agent'
 import { excelReaderAgent } from './excel-reader-agent'
-import { filterAgent } from './filter-agent'
+import { excelParserAgent } from './excel-parser-agent'
 import { analyzerAgent } from './analyzer-agent'
 import { emailComposerAgent } from './email-composer-agent'
 
@@ -40,14 +40,32 @@ export async function executeSimpleWorkflow(
       return state
     }
 
-    // Step 4: Filter Agent
-    const filterResult = await filterAgent(state)
-    state = { ...state, ...filterResult }
+    // Step 4: Excel Parser Agent - Intelligently parse columns and structure data
+    const parserResult = await excelParserAgent(state, (log) => {
+      // Pass through agent logs for real-time updates
+      if (onUpdate) {
+        const updatedState = {
+          ...state,
+          agentLogs: [
+            ...(state.agentLogs || []),
+            {
+              agent: log.agent,
+              action: log.action,
+              status: log.status,
+              timestamp: new Date().toISOString(),
+              details: log.details
+            }
+          ]
+        }
+        onUpdate(updatedState)
+      }
+    })
+    state = { ...state, ...parserResult }
     if (onUpdate) onUpdate(state)
 
-    // Step 5: Orchestrator reviews Filter results and decides routing
-    const afterFilterResult = await orchestratorAgent(state, 'after_filter')
-    state = { ...state, ...afterFilterResult }
+    // Step 5: Orchestrator reviews Parser results and decides routing
+    const afterParserResult = await orchestratorAgent(state, 'after_parser')
+    state = { ...state, ...afterParserResult }
     if (onUpdate) onUpdate(state)
 
     // Check if orchestrator decided to stop

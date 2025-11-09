@@ -14,8 +14,10 @@ interface AnalysisResult {
 function buildAnalysisPrompt(opportunity: Opportunity, customInstructions?: CustomInstruction[]): string {
   let prompt = `Analyze this business opportunity to determine if it involves AI, Analytics, or Data-related work.
 
-Opportunity Name: ${opportunity.oppName}
-Client: ${opportunity.clientName}
+Opportunity Name: ${opportunity.opportunityName}
+${opportunity.dealDescription ? `Deal Description: ${opportunity.dealDescription}` : ''}
+Account: ${opportunity.accountName}
+${opportunity.industryName ? `Industry: ${opportunity.industryName}` : ''}
 
 Categories:
 - AI: Artificial Intelligence, Machine Learning, NLP, Computer Vision, Chatbots, Recommendation Engines, Generative AI
@@ -54,16 +56,17 @@ Categories:
 
   prompt += `
 Instructions:
-1. Analyze the opportunity name for keywords and context
-2. Apply the custom rules above (if provided) to make your decision
-3. Assign appropriate tags (can be multiple: AI, Analytics, Data, or None)
-4. Provide a clear rationale explaining your decision
-5. Rate your confidence (0-100%)
+1. Analyze BOTH the opportunity name AND deal description for keywords and context
+2. The description provides crucial details - give it significant weight in your analysis
+3. Apply the custom rules above (if provided) to make your decision
+4. Assign appropriate tags (can be multiple: AI, Analytics, Data, or None)
+5. Provide a clear rationale explaining your decision based on both name and description
+6. Rate your confidence (0-100%)
 
 Respond in JSON format:
 {
   "tags": ["AI", "Analytics"],
-  "rationale": "Clear explanation of why these tags were assigned",
+  "rationale": "Clear explanation of why these tags were assigned based on the opportunity name and description",
   "confidence": 85
 }`
 
