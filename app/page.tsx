@@ -86,7 +86,7 @@ export default function Home() {
 
   // Add communication log (agent-to-agent)
   const addCommunication = (from: string, to: string, message: string) => {
-    addLog(`${from} → ${to}`, message, 'info', undefined, from, to)
+    addLog(`${from} → ${to}`, message, 'info', undefined, from, to, undefined)
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
