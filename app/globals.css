@@ -2901,14 +2901,14 @@ footer {
 .stop-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
+  gap: 4px;
+  padding: 6px 12px;
   background: var(--error-red);
   color: white;
   border: none;
   border-radius: 4px;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
   font-family: inherit;
@@ -2917,7 +2917,7 @@ footer {
 .stop-btn:hover {
   background: #C10039;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(225, 0, 70, 0.3);
+  box-shadow: 0 2px 8px rgba(225, 0, 70, 0.3);
 }
 
 .stop-btn:active {
@@ -2926,6 +2926,8 @@ footer {
 
 .stop-btn svg {
   stroke: white;
+  width: 12px;
+  height: 12px;
 }
 
 .progress-status-text {
@@ -2964,13 +2966,13 @@ footer {
 .download-excel-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
+  gap: 4px;
+  padding: 6px 12px;
   background: linear-gradient(135deg, var(--accenture-purple) 0%, #8B00CC 100%);
   color: white;
   border: none;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -3010,8 +3012,8 @@ footer {
 
 .download-excel-btn svg {
   stroke: white;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   z-index: 1;
   transition: transform 0.3s;
 }
