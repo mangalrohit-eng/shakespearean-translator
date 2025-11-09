@@ -41,13 +41,13 @@ export default function ArchitecturePage() {
         </div>
       </header>
 
-      <div className="container" style={{marginTop: '20px', maxWidth: '1400px'}}>
+      <div className="container architecture-container">
         <div className="page-hero">
           <h1>Multi-Agent Architecture</h1>
           <p className="hero-subtitle">
             LangGraph workflow with four AI agents powered by GPT-4o-mini
             <button className="help-tooltip-trigger" title="About this architecture">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14">
                 <circle cx="12" cy="12" r="10" strokeWidth="2"/>
                 <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" strokeWidth="2" strokeLinecap="round"/>
               </svg>
@@ -61,7 +61,7 @@ export default function ArchitecturePage() {
       </div>
 
       {/* Main Architecture - Above the Fold */}
-      <div className="architecture-flow" style={{marginTop: '20px'}}>
+      <div className="architecture-flow">
         
         {/* START Node */}
         <div className="agent-node-compact start">
@@ -90,7 +90,7 @@ export default function ArchitecturePage() {
           </svg>
           {flowStep >= 1 && (
             <div className="data-packet" style={{animation: 'flowPacket 2s ease-in-out'}}>
-              File
+              FILE
             </div>
           )}
         </div>
@@ -109,7 +109,7 @@ export default function ArchitecturePage() {
             <p><strong>LLM:</strong> GPT-4o-mini</p>
             <p><strong>Role:</strong> Intelligent workflow coordination</p>
             <p><strong>Responsibilities:</strong></p>
-            <ul style={{paddingLeft: '20px', margin: '8px 0', fontSize: '0.85rem'}}>
+            <ul className="agent-details-list">
               <li>Makes routing decisions using AI</li>
               <li>Reviews output from each agent</li>
               <li>Decides if workflow should continue</li>
@@ -126,7 +126,7 @@ export default function ArchitecturePage() {
           </svg>
           {flowStep >= 1 && (
             <div className="data-packet" style={{animation: 'flowPacket 2s ease-in-out'}}>
-              📋 Task
+              TASK
             </div>
           )}
         </div>
@@ -156,7 +156,7 @@ export default function ArchitecturePage() {
           </svg>
           {flowStep >= 2 && (
             <div className="data-packet" style={{animation: 'flowPacket 2s ease-in-out'}}>
-              📊 150 rows
+              150 ROWS
             </div>
           )}
         </div>
@@ -187,7 +187,7 @@ export default function ArchitecturePage() {
           </svg>
           {flowStep >= 3 && (
             <div className="data-packet" style={{animation: 'flowPacket 2s ease-in-out'}}>
-              🎯 47 opps
+              47 OPPS
             </div>
           )}
         </div>
@@ -218,7 +218,7 @@ export default function ArchitecturePage() {
           </svg>
           {flowStep >= 0 && (
             <div className="data-packet" style={{animation: 'flowPacket 2s ease-in-out'}}>
-              ✅ Tagged
+              TAGGED
             </div>
           )}
         </div>

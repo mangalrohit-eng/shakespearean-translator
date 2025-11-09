@@ -431,7 +431,20 @@ export default function Home() {
           )}
 
           <footer>
-            <p>Powered by OpenAI GPT-4o-mini • AI-driven opportunity analysis</p>
+            <div className="footer-content">
+              <div className="footer-section">
+                <span className="footer-label">Technology Stack</span>
+                <span className="footer-value">Next.js 14 • LangGraph 1.0 • OpenAI GPT-4o-mini</span>
+              </div>
+              <div className="footer-section">
+                <span className="footer-label">Version</span>
+                <span className="footer-value">1.0.0</span>
+              </div>
+              <div className="footer-section">
+                <span className="footer-label">© 2025 Accenture</span>
+                <span className="footer-value">Enterprise AI Solutions</span>
+              </div>
+            </div>
           </footer>
         </div>
       </div>
@@ -456,8 +469,11 @@ export default function Home() {
         <div className="agent-logs">
           {agentLogs.length === 0 ? (
             <div className="no-logs">
-              <p>No activity yet</p>
-              <p className="hint">Upload a file to start analysis</p>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="48" height="48" className="empty-icon">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <p className="empty-title">AI Agents Ready</p>
+              <p className="hint">Upload an Excel file to begin intelligent analysis</p>
             </div>
           ) : (
             agentLogs.map(log => (
