@@ -302,7 +302,7 @@ export default function Home() {
                   <span className="log-agent">{log.agent}</span>
                   <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
                     {log.detailedData && (
-                      <span className="log-details-indicator" title="Has detailed payload data">
+                      <span className="log-details-indicator">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14">
                           <circle cx="12" cy="12" r="10" strokeWidth="2"/>
                           <path d="M12 16v-4M12 8h.01" strokeWidth="2" strokeLinecap="round"/>
