@@ -25,6 +25,7 @@ export interface Opportunity {
   clientGroup: string
   dealSize: string
   total: number
+  daiCaptain?: string
 }
 
 export interface AnalyzedOpportunity extends Opportunity {

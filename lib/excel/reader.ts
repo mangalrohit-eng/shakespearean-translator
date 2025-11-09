@@ -24,6 +24,7 @@ export function filterCommsMedia(data: ExcelRow[]): Opportunity[] {
       clientGroup: row['Client Group'] || '',
       dealSize: row['Deal Size'] || '',
       total: row.Total || 0,
+      daiCaptain: row['DAI Captain'] || 'Unassigned',
     }))
 }
 
