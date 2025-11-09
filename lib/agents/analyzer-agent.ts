@@ -103,7 +103,7 @@ Describe your analysis strategy in 2-3 sentences.`
       progressUpdates.push({
         current,
         total: totalOpportunities,
-        currentOpp: analyzed.oppName,
+        currentOpp: analyzed.opportunityName,
         timestamp: new Date().toISOString(),
       })
 
