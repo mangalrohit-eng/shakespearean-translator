@@ -44,17 +44,22 @@ Sample data from first row:
 ${columnNames.map(col => `"${col}": "${sampleRow[col]}"`).join('\n')}
 
 Your task: Identify which columns contain the following information:
+
+REQUIRED FIELDS (must find these):
 1. **Deal ID / Opportunity ID**: Unique identifier (often numeric or alphanumeric code)
 2. **Deal Name / Opportunity Name**: The name or title of the opportunity/deal
-3. **Deal Description**: Detailed description of what the opportunity involves
-4. **Account Name / Client Name**: The customer/client/account name
-5. **Industry Name / Client Group**: Industry classification or group
+3. **Account Name / Client Name**: The customer/client/account name
+
+OPTIONAL FIELDS (nice to have, but not required):
+4. **Deal Description**: Detailed description of what the opportunity involves (may not exist)
+5. **Industry Name / Client Group**: Industry classification or group (may not exist)
 
 Rules:
 - Look for exact matches first, then semantic matches
 - Column names might have variations (e.g., "Opp Name" vs "Opportunity Name")
-- Some columns might not exist (return null if not found)
+- Optional fields can be null if not found - that's perfectly fine
 - Consider the sample data values to confirm your identification
+- Ignore any other columns not listed above
 
 Respond ONLY with a valid JSON object in this exact format (no markdown, no explanation):
 {
@@ -87,14 +92,24 @@ Respond ONLY with a valid JSON object in this exact format (no markdown, no expl
         mapping: columnMapping,
         dealIdColumn: columnMapping.dealId || 'NOT FOUND',
         dealNameColumn: columnMapping.dealName || 'NOT FOUND',
-        dealDescriptionColumn: columnMapping.dealDescription || 'NOT FOUND',
-        accountNameColumn: columnMapping.accountName || 'NOT FOUND'
+        dealDescriptionColumn: columnMapping.dealDescription || 'NOT AVAILABLE (optional)',
+        accountNameColumn: columnMapping.accountName || 'NOT FOUND',
+        industryNameColumn: columnMapping.industryName || 'NOT AVAILABLE (optional)'
       }
     })
 
-    // Validate required fields
+    // Validate required fields only
     if (!columnMapping.dealName || !columnMapping.accountName) {
-      throw new Error('Could not identify required columns (deal name and account name)')
+      throw new Error('Could not identify required columns: Deal Name and Account Name are mandatory')
+    }
+    
+    // Warn if description not found but continue
+    if (!columnMapping.dealDescription) {
+      onUpdate?.({
+        agent: 'ExcelParserAgent',
+        action: 'ℹ️ Deal Description column not found - will analyze based on opportunity name only',
+        status: 'active'
+      })
     }
 
     // Parse rows into structured Opportunity objects

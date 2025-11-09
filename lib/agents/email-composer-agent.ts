@@ -66,7 +66,7 @@ Context:
 - Data-focused: ${dataOpps.length}
 
 Opportunities with details:
-${opportunities.map(o => `• ${o.opportunityName} → ${o.tags.join(', ')} (${Math.round(o.confidence * 100)}% confidence)${o.dealDescription ? ` - ${o.dealDescription}` : ''}`).join('\n')}
+${opportunities.map(o => `• ${o.opportunityName} → ${o.tags.join(', ')} (${Math.round(o.confidence * 100)}% confidence)${o.dealDescription && o.dealDescription.trim() ? ` - ${o.dealDescription}` : ' (no description)'}`).join('\n')}
 
 Write a SHORT, DIRECT, CASUAL email with this structure:
 
@@ -123,7 +123,7 @@ Write the email body (HTML format) without subject line:`
             <li>
               <strong>${o.opportunityName}</strong> → ${o.tags.length > 0 ? o.tags.join(', ') : 'Untagged'} 
               (${Math.round(o.confidence * 100)}% confidence)
-              ${o.dealDescription ? `<br/><span style="color: rgba(255, 255, 255, 0.7); font-size: 0.9em;">${o.dealDescription}</span>` : ''}
+              ${o.dealDescription && o.dealDescription.trim() ? `<br/><span style="color: rgba(255, 255, 255, 0.7); font-size: 0.9em;">${o.dealDescription}</span>` : ''}
             </li>
           `).join('')}
         </ul>

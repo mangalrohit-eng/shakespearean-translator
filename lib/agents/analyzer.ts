@@ -12,10 +12,12 @@ interface AnalysisResult {
 }
 
 function buildAnalysisPrompt(opportunity: Opportunity, customInstructions?: CustomInstruction[]): string {
+  const hasDescription = opportunity.dealDescription && opportunity.dealDescription.trim().length > 0
+  
   let prompt = `Analyze this business opportunity to determine if it involves AI, Analytics, or Data-related work.
 
 Opportunity Name: ${opportunity.opportunityName}
-${opportunity.dealDescription ? `Deal Description: ${opportunity.dealDescription}` : ''}
+${hasDescription ? `Deal Description: ${opportunity.dealDescription}` : '(No description available - analyze based on name only)'}
 Account: ${opportunity.accountName}
 ${opportunity.industryName ? `Industry: ${opportunity.industryName}` : ''}
 
@@ -56,17 +58,21 @@ Categories:
 
   prompt += `
 Instructions:
-1. Analyze BOTH the opportunity name AND deal description for keywords and context
-2. The description provides crucial details - give it significant weight in your analysis
+1. ${hasDescription 
+    ? 'Analyze BOTH the opportunity name AND deal description for keywords and context' 
+    : 'Analyze the opportunity name carefully for keywords and context (no description available)'}
+2. ${hasDescription 
+    ? 'The description provides crucial details - give it significant weight in your analysis' 
+    : 'Without a description, make your best judgment based on the opportunity name alone'}
 3. Apply the custom rules above (if provided) to make your decision
 4. Assign appropriate tags (can be multiple: AI, Analytics, Data, or None)
-5. Provide a clear rationale explaining your decision based on both name and description
-6. Rate your confidence (0-100%)
+5. Provide a clear rationale explaining your decision
+6. Rate your confidence (0-100%) ${!hasDescription ? '- confidence may be lower without description' : ''}
 
 Respond in JSON format:
 {
   "tags": ["AI", "Analytics"],
-  "rationale": "Clear explanation of why these tags were assigned based on the opportunity name and description",
+  "rationale": "Clear explanation of why these tags were assigned",
   "confidence": 85
 }`
 
