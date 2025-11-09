@@ -24,6 +24,7 @@ export default function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [results, setResults] = useState<any[]>([])
   const [showResults, setShowResults] = useState(false)
+  const [activeTab, setActiveTab] = useState('results')
   const abortControllerRef = useRef<AbortController | null>(null)
   const logEndRef = useRef<HTMLDivElement>(null)
 
@@ -234,6 +235,85 @@ export default function Home() {
     }
   }
 
+  // Generate emails for D&AI captains
+  function generateCaptainEmails() {
+    const aiOpps = results.filter((r: any) => r.tags.includes('AI'))
+    const analyticsOpps = results.filter((r: any) => r.tags.includes('Analytics'))
+    const dataOpps = results.filter((r: any) => r.tags.includes('Data'))
+
+    const generateEmail = (captain: string, tag: string, opportunities: any[]) => {
+      return {
+        captain,
+        tag,
+        subject: `D&AI Opportunity Review - ${tag} Focus Areas (${opportunities.length} Opportunities)`,
+        body: `
+<div class="email-content">
+  <p>Dear ${tag} Captain,</p>
+  
+  <p>I hope this email finds you well. As part of our ongoing Data & AI opportunity identification initiative, 
+  our AI-powered analysis system has identified <strong>${opportunities.length} opportunities</strong> within the 
+  Comms & Media sector that align with <strong>${tag}</strong> capabilities.</p>
+  
+  <h3>Executive Summary</h3>
+  <ul>
+    <li><strong>Total Opportunities:</strong> ${opportunities.length}</li>
+    <li><strong>Focus Area:</strong> ${tag}</li>
+    <li><strong>Sector:</strong> Communications & Media</li>
+    <li><strong>Analysis Date:</strong> ${new Date().toLocaleDateString()}</li>
+  </ul>
+  
+  <h3>Opportunity Details</h3>
+  <table class="email-table">
+    <thead>
+      <tr>
+        <th>Opportunity ID</th>
+        <th>Opportunity Name</th>
+        <th>Tags</th>
+        <th>Confidence</th>
+        <th>Rationale</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${opportunities.map((opp: any) => `
+        <tr>
+          <td>${opp.id}</td>
+          <td><strong>${opp.dealName}</strong></td>
+          <td>${opp.tags.join(', ')}</td>
+          <td>${opp.confidence}%</td>
+          <td>${opp.rationale}</td>
+        </tr>
+      `).join('')}
+    </tbody>
+  </table>
+  
+  <h3>Recommended Next Steps</h3>
+  <ol>
+    <li><strong>Priority Review:</strong> Review opportunities with confidence scores above 80% for immediate engagement</li>
+    <li><strong>Client Engagement:</strong> Coordinate with account teams to schedule discovery sessions</li>
+    <li><strong>Solution Mapping:</strong> Identify relevant ${tag} solutions and case studies from our portfolio</li>
+    <li><strong>Proposal Development:</strong> Prepare tailored value propositions highlighting ${tag} capabilities</li>
+  </ol>
+  
+  <p>Please let me know if you need any additional information or would like to discuss any of these opportunities in detail.</p>
+  
+  <p>Best regards,<br>
+  <strong>Data & AI Opportunity Intelligence System</strong><br>
+  Accenture | Communications & Media</p>
+</div>
+        `.trim()
+      }
+    }
+
+    const emails = []
+    if (aiOpps.length > 0) emails.push(generateEmail('AI Captain', 'AI', aiOpps))
+    if (analyticsOpps.length > 0) emails.push(generateEmail('Analytics Captain', 'Analytics', analyticsOpps))
+    if (dataOpps.length > 0) emails.push(generateEmail('Data Captain', 'Data', dataOpps))
+
+    return emails
+  }
+
+  const captainEmails = showResults ? generateCaptainEmails() : []
+
   return (
     <div className="app-layout">
       <div className={`main-content ${isSidebarOpen ? 'with-sidebar' : ''}`}>
@@ -374,60 +454,118 @@ export default function Home() {
                   Download Excel
                 </button>
               </div>
-              
-              <div className="results-summary">
-                <div className="summary-stat">
-                  <span className="stat-label">Total</span>
-                  <span className="stat-value">{results.length}</span>
-                </div>
-                <div className="summary-stat ai">
-                  <span className="stat-label">AI</span>
-                  <span className="stat-value">{results.filter(r => r.tags.includes('AI')).length}</span>
-                </div>
-                <div className="summary-stat analytics">
-                  <span className="stat-label">Analytics</span>
-                  <span className="stat-value">{results.filter(r => r.tags.includes('Analytics')).length}</span>
-                </div>
-                <div className="summary-stat data">
-                  <span className="stat-label">Data</span>
-                  <span className="stat-value">{results.filter(r => r.tags.includes('Data')).length}</span>
-                </div>
-              </div>
 
-              <div className="results-table-container">
-                <table className="results-table">
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Opportunity Name</th>
-                      <th>Tags</th>
-                      <th>Confidence</th>
-                      <th>Rationale</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {results.slice(0, 10).map((result, idx) => (
-                      <tr key={idx}>
-                        <td>{result.id}</td>
-                        <td>{result.dealName}</td>
-                        <td>
-                          <div className="tags-cell">
-                            {result.tags.map((tag: string, i: number) => (
-                              <span key={i} className={`tag tag-${tag.toLowerCase()}`}>{tag}</span>
-                            ))}
-                            {result.tags.length === 0 && <span className="tag tag-none">None</span>}
-                          </div>
-                        </td>
-                        <td>{result.confidence}%</td>
-                        <td className="rationale-cell">{result.rationale}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {results.length > 10 && (
-                  <p className="table-footer">Showing 10 of {results.length} results. Download Excel for full report.</p>
-                )}
+              {/* Tabs Navigation */}
+              <div className="results-tabs">
+                <button 
+                  className={`results-tab ${activeTab === 'results' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('results')}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
+                    <path d="M3 3h7v7H3V3zm11 0h7v7h-7V3zM3 14h7v7H3v-7zm11 0h7v7h-7v-7z" strokeWidth="2"/>
+                  </svg>
+                  Analysis Results
+                </button>
+                {captainEmails.map((email, idx) => (
+                  <button 
+                    key={idx}
+                    className={`results-tab ${activeTab === `email-${email.tag.toLowerCase()}` ? 'active' : ''}`}
+                    onClick={() => setActiveTab(`email-${email.tag.toLowerCase()}`)}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" strokeWidth="2"/>
+                      <path d="M22 6l-10 7L2 6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    {email.captain}
+                  </button>
+                ))}
               </div>
+              
+              {/* Tab Content */}
+              {activeTab === 'results' && (
+                <>
+                  <div className="results-summary">
+                    <div className="summary-stat">
+                      <span className="stat-label">Total</span>
+                      <span className="stat-value">{results.length}</span>
+                    </div>
+                    <div className="summary-stat ai">
+                      <span className="stat-label">AI</span>
+                      <span className="stat-value">{results.filter(r => r.tags.includes('AI')).length}</span>
+                    </div>
+                    <div className="summary-stat analytics">
+                      <span className="stat-label">Analytics</span>
+                      <span className="stat-value">{results.filter(r => r.tags.includes('Analytics')).length}</span>
+                    </div>
+                    <div className="summary-stat data">
+                      <span className="stat-label">Data</span>
+                      <span className="stat-value">{results.filter(r => r.tags.includes('Data')).length}</span>
+                    </div>
+                  </div>
+
+                  <div className="results-table-container">
+                    <table className="results-table">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Opportunity Name</th>
+                          <th>Tags</th>
+                          <th>Confidence</th>
+                          <th>Rationale</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {results.slice(0, 10).map((result, idx) => (
+                          <tr key={idx}>
+                            <td>{result.id}</td>
+                            <td>{result.dealName}</td>
+                            <td>
+                              <div className="tags-cell">
+                                {result.tags.map((tag: string, i: number) => (
+                                  <span key={i} className={`tag tag-${tag.toLowerCase()}`}>{tag}</span>
+                                ))}
+                                {result.tags.length === 0 && <span className="tag tag-none">None</span>}
+                              </div>
+                            </td>
+                            <td>{result.confidence}%</td>
+                            <td className="rationale-cell">{result.rationale}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    {results.length > 10 && (
+                      <p className="table-footer">Showing 10 of {results.length} results. Download Excel for full report.</p>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* Email Content Tabs */}
+              {captainEmails.map((email, idx) => (
+                activeTab === `email-${email.tag.toLowerCase()}` && (
+                  <div key={idx} className="email-view">
+                    <div className="email-header-info">
+                      <div className="email-field">
+                        <span className="email-label">To:</span>
+                        <span className="email-value">{email.captain} &lt;{email.tag.toLowerCase()}.captain@accenture.com&gt;</span>
+                      </div>
+                      <div className="email-field">
+                        <span className="email-label">From:</span>
+                        <span className="email-value">D&AI Opportunity Intelligence &lt;dai-ops@accenture.com&gt;</span>
+                      </div>
+                      <div className="email-field">
+                        <span className="email-label">Subject:</span>
+                        <span className="email-value">{email.subject}</span>
+                      </div>
+                      <div className="email-field">
+                        <span className="email-label">Date:</span>
+                        <span className="email-value">{new Date().toLocaleString()}</span>
+                      </div>
+                    </div>
+                    <div className="email-body" dangerouslySetInnerHTML={{ __html: email.body }} />
+                  </div>
+                )
+              ))}
             </div>
           )}
 

@@ -3563,3 +3563,164 @@ select:focus-visible {
   position: relative;
   z-index: 1;
 }
+
+/* Results Tabs */
+.results-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 24px 0 0 0;
+  padding: 0 0 16px 0;
+  border-bottom: 2px solid rgba(161, 0, 255, 0.1);
+  overflow-x: auto;
+  flex-wrap: nowrap;
+}
+
+.results-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: transparent;
+  border: 1.5px solid rgba(161, 0, 255, 0.2);
+  border-radius: 6px 6px 0 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
+  position: relative;
+}
+
+.results-tab:hover {
+  background: rgba(161, 0, 255, 0.05);
+  border-color: rgba(161, 0, 255, 0.4);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.results-tab.active {
+  background: rgba(161, 0, 255, 0.15);
+  border-color: var(--accenture-purple);
+  color: white;
+  border-bottom-color: transparent;
+}
+
+.results-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accenture-purple);
+}
+
+.results-tab svg {
+  stroke: currentColor;
+  flex-shrink: 0;
+}
+
+/* Email View */
+.email-view {
+  margin-top: 24px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(161, 0, 255, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.email-header-info {
+  background: rgba(161, 0, 255, 0.05);
+  padding: 20px;
+  border-bottom: 1px solid rgba(161, 0, 255, 0.2);
+}
+
+.email-field {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.email-field:last-child {
+  margin-bottom: 0;
+}
+
+.email-label {
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 600;
+  min-width: 70px;
+}
+
+.email-value {
+  color: rgba(255, 255, 255, 0.9);
+  flex: 1;
+}
+
+.email-body {
+  padding: 32px;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.8;
+}
+
+/* Email Content Styles */
+.email-content p {
+  margin: 0 0 16px 0;
+}
+
+.email-content h3 {
+  color: var(--accenture-purple);
+  font-size: 18px;
+  font-weight: 600;
+  margin: 32px 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgba(161, 0, 255, 0.3);
+}
+
+.email-content ul,
+.email-content ol {
+  margin: 0 0 16px 0;
+  padding-left: 24px;
+}
+
+.email-content li {
+  margin-bottom: 8px;
+}
+
+.email-content li strong {
+  color: rgba(255, 255, 255, 1);
+}
+
+.email-content .email-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.email-content .email-table thead {
+  background: rgba(161, 0, 255, 0.2);
+}
+
+.email-content .email-table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  color: white;
+  border-bottom: 2px solid rgba(161, 0, 255, 0.4);
+}
+
+.email-content .email-table td {
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.email-content .email-table tbody tr:hover {
+  background: rgba(161, 0, 255, 0.05);
+}
+
+.email-content .email-table tbody tr:last-child td {
+  border-bottom: none;
+}
