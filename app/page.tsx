@@ -64,18 +64,19 @@ export default function Home() {
   const addLog = (
     agent: string, 
     message: string, 
-    type: 'info' | 'success' | 'processing' = 'info',
-    agentType: 'orchestrator' | 'agent' | 'tool' | undefined = undefined,
-    from: string | undefined = undefined,
-    to: string | undefined = undefined,
-    details: string | undefined = undefined
+    type?: 'info' | 'success' | 'processing',
+    agentType?: 'orchestrator' | 'agent' | 'tool',
+    from?: string,
+    to?: string,
+    details?: string
   ) => {
+    const logType = type || 'info'
     const log: AgentLog = {
       id: Date.now().toString() + Math.random(),
       timestamp: new Date().toLocaleTimeString(),
       agent,
       message,
-      type,
+      type: logType,
       agentType,
       from,
       to,
@@ -86,7 +87,7 @@ export default function Home() {
 
   // Add communication log (agent-to-agent)
   const addCommunication = (from: string, to: string, message: string) => {
-    addLog(`${from} to ${to}`, message, 'info', undefined, from, to)
+    addLog(`${from} to ${to}`, message, 'info', undefined, from, to, undefined)
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
