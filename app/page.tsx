@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface ProgressUpdate {
@@ -16,6 +16,14 @@ interface AgentUpdate {
   status: 'active' | 'complete'
 }
 
+interface AgentLog {
+  id: string
+  timestamp: string
+  agent: string
+  message: string
+  type: 'info' | 'success' | 'processing'
+}
+
 export default function Home() {
   const router = useRouter()
   const [file, setFile] = useState<File | null>(null)
@@ -24,7 +32,29 @@ export default function Home() {
   const [success, setSuccess] = useState('')
   const [progress, setProgress] = useState<ProgressUpdate | null>(null)
   const [agents, setAgents] = useState<AgentUpdate[]>([])
+  const [agentLogs, setAgentLogs] = useState<AgentLog[]>([])
+  const [showSidebar, setShowSidebar] = useState(true)
   const abortControllerRef = useRef<AbortController | null>(null)
+  const logEndRef = useRef<HTMLDivElement>(null)
+
+  // Auto-scroll logs to bottom
+  useEffect(() => {
+    if (logEndRef.current) {
+      logEndRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [agentLogs])
+
+  // Add log entry
+  const addLog = (agent: string, message: string, type: 'info' | 'success' | 'processing' = 'info') => {
+    const log: AgentLog = {
+      id: Date.now().toString() + Math.random(),
+      timestamp: new Date().toLocaleTimeString(),
+      agent,
+      message,
+      type,
+    }
+    setAgentLogs(prev => [...prev, log])
+  }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
@@ -68,6 +98,8 @@ export default function Home() {
     setSuccess('')
     setProgress(null)
     setAgents([])
+    setAgentLogs([])
+    addLog('System', 'Starting analysis pipeline...', 'info')
 
     // Create abort controller for cancellation
     abortControllerRef.current = new AbortController()
@@ -120,6 +152,10 @@ export default function Home() {
             if (data.type === 'progress') {
               setProgress(data)
             } else if (data.type === 'agent') {
+              // Add to logs
+              const logType = data.status === 'complete' ? 'success' : 'processing'
+              addLog(data.agent, data.action, logType)
+              
               setAgents(prev => {
                 const existing = prev.find(a => a.agent === data.agent)
                 if (existing) {
@@ -182,22 +218,69 @@ export default function Home() {
   }
 
   return (
-    <div className="container">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
-        <div style={{ flex: 1 }}>
-          <h1>🎯 Data & AI Opportunities Analyzer</h1>
-          <p className="subtitle">
-            Upload your opportunities Excel file to identify AI, Analytics, and Data-related deals
-          </p>
+    <div className="app-layout">
+      {/* Agent Activity Sidebar */}
+      {showSidebar && (
+        <div className="agent-sidebar">
+          <div className="sidebar-header">
+            <h3>Agent Activity</h3>
+            <button 
+              className="sidebar-close-btn"
+              onClick={() => setShowSidebar(false)}
+              title="Close sidebar"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="agent-logs">
+            {agentLogs.length === 0 ? (
+              <div className="no-logs">
+                <p>No activity yet</p>
+                <p className="hint">Upload a file to start analysis</p>
+              </div>
+            ) : (
+              agentLogs.map(log => (
+                <div key={log.id} className={`log-entry log-${log.type}`}>
+                  <div className="log-header">
+                    <span className="log-agent">{log.agent}</span>
+                    <span className="log-time">{log.timestamp}</span>
+                  </div>
+                  <div className="log-message">{log.message}</div>
+                </div>
+              ))
+            )}
+            <div ref={logEndRef} />
+          </div>
         </div>
-        <button
-          className="back-btn"
-          onClick={() => router.push('/settings')}
-          style={{ marginTop: '8px' }}
-        >
-          ⚙ Configure Rules
-        </button>
-      </div>
+      )}
+
+      {/* Main Content */}
+      <div className={`main-content ${showSidebar ? 'with-sidebar' : ''}`}>
+        {!showSidebar && (
+          <button 
+            className="sidebar-toggle-btn"
+            onClick={() => setShowSidebar(true)}
+          >
+            📋 Show Activity
+          </button>
+        )}
+
+        <div className="container">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+            <div style={{ flex: 1 }}>
+              <h1>🎯 Data & AI Opportunities Analyzer</h1>
+              <p className="subtitle">
+                Upload your opportunities Excel file to identify AI, Analytics, and Data-related deals
+              </p>
+            </div>
+            <button
+              className="back-btn"
+              onClick={() => router.push('/settings')}
+              style={{ marginTop: '8px' }}
+            >
+              ⚙ Configure Rules
+            </button>
+          </div>
 
       {error && <div className="error">{error}</div>}
       {success && <div className="success">{success}</div>}
@@ -321,9 +404,11 @@ export default function Home() {
         )}
       </div>
 
-      <footer>
-        <p>Powered by OpenAI GPT-4o-mini • AI-driven opportunity analysis</p>
-      </footer>
+          <footer>
+            <p>Powered by OpenAI GPT-4o-mini • AI-driven opportunity analysis</p>
+          </footer>
+        </div>
+      </div>
     </div>
   )
 }
