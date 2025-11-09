@@ -3,23 +3,12 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-interface AnalyzedOpportunity {
-  id: string
-  clientName: string
-  oppName: string
-  tags: string[]
-  confidence: number
-  rationale: string
-}
-
 export default function Home() {
   const router = useRouter()
   const [file, setFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const [results, setResults] = useState<AnalyzedOpportunity[]>([])
-  const [showResults, setShowResults] = useState(false)
   const [progress, setProgress] = useState(0)
   const [progressStatus, setProgressStatus] = useState('')
 
@@ -47,20 +36,11 @@ export default function Home() {
     setSuccess('')
     setProgress(0)
     setProgressStatus('Initializing AI agents...')
-    setShowResults(false)
-    setResults([])
 
     try {
       const formData = new FormData()
       formData.append('file', file)
 
-      // Get custom instructions from localStorage
-      const stored = localStorage.getItem('analysisInstructions')
-      if (stored) {
-        formData.append('customInstructions', stored)
-      }
-
-      // Simulate progress updates
       const progressInterval = setInterval(() => {
         setProgress(prev => {
           if (prev < 90) return prev + 10
@@ -68,13 +48,12 @@ export default function Home() {
         })
       }, 500)
 
-      // Update status messages
       setTimeout(() => setProgressStatus('Orchestrator planning workflow...'), 500)
       setTimeout(() => setProgressStatus('Excel Reader parsing file...'), 1500)
       setTimeout(() => setProgressStatus('Filter Agent identifying opportunities...'), 3000)
       setTimeout(() => setProgressStatus('Analyzer Agent tagging with AI...'), 5000)
 
-      const response = await fetch('/api/analyze-results', {
+      const response = await fetch('/api/analyze', {
         method: 'POST',
         body: formData,
       })
@@ -88,52 +67,22 @@ export default function Home() {
         throw new Error(data.error || 'Failed to analyze opportunities')
       }
 
-      const data = await response.json()
-      setResults(data.results)
-      setShowResults(true)
-      setSuccess(`Analysis complete! ${data.results.length} opportunities analyzed.`)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
-    } finally {
-      setLoading(false)
-      setProgress(0)
-      setProgressStatus('')
-    }
-  }
-
-  async function handleDownloadExcel() {
-    if (results.length === 0) return
-
-    try {
-      const formData = new FormData()
-      formData.append('results', JSON.stringify(results))
-
-      const response = await fetch('/api/export-excel', {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to generate Excel file')
-      }
-
       const blob = await response.blob()
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
       link.download = 'tagged-opportunities.xlsx'
       link.click()
+      
+      setSuccess('Analysis complete! File downloaded.')
+      setFile(null)
     } catch (err: any) {
-      setError(err instanceof Error ? err.message : 'Failed to download Excel file')
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setLoading(false)
+      setProgress(0)
+      setProgressStatus('')
     }
-  }
-
-  function handleNewAnalysis() {
-    setShowResults(false)
-    setResults([])
-    setFile(null)
-    setError('')
-    setSuccess('')
   }
 
   return (
@@ -164,7 +113,6 @@ export default function Home() {
           {error && <div className="error">{error}</div>}
           {success && <div className="success">{success}</div>}
 
-          {!showResults && (
           <div className="upload-analyze-section">
             <div className="upload-area-compact">
               {!file ? (
@@ -235,89 +183,9 @@ export default function Home() {
             </div>
           )}
 
-          {!showResults && (
-            <div className="info-box-compact">
-              <strong>How it works:</strong> Filters US-Comms & Media opportunities • AI-powered tagging • Exports results
-            </div>
-          )}
-
-          {showResults && results.length > 0 && (
-            <div className="results-section">
-              <div className="results-header-inline">
-                <h2>Analysis Results</h2>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <button className="new-analysis-btn" onClick={handleNewAnalysis}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
-                      <path d="M12 5v14M5 12h14" strokeWidth="2" strokeLinecap="round"/>
-                    </svg>
-                    New Analysis
-                  </button>
-                  <button className="download-btn-inline" onClick={handleDownloadExcel}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
-                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4m4-5l5 5 5-5m-5 5V3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    Download Excel
-                  </button>
-                </div>
-              </div>
-
-              <div className="results-stats-inline">
-                <div className="stat-item-inline">
-                  <span className="stat-label-inline">Total Analyzed</span>
-                  <span className="stat-value-inline">{results.length}</span>
-                </div>
-                <div className="stat-item-inline">
-                  <span className="stat-label-inline">AI Tagged</span>
-                  <span className="stat-value-inline ai-color">{results.filter(r => r.tags.includes('AI')).length}</span>
-                </div>
-                <div className="stat-item-inline">
-                  <span className="stat-label-inline">Analytics Tagged</span>
-                  <span className="stat-value-inline analytics-color">{results.filter(r => r.tags.includes('Analytics')).length}</span>
-                </div>
-                <div className="stat-item-inline">
-                  <span className="stat-label-inline">Data Tagged</span>
-                  <span className="stat-value-inline data-color">{results.filter(r => r.tags.includes('Data')).length}</span>
-                </div>
-              </div>
-
-              <div className="results-table-container">
-                <table className="results-table">
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Client</th>
-                      <th>Opportunity Name</th>
-                      <th>Tags</th>
-                      <th>Confidence</th>
-                      <th>Rationale</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {results.map((result, idx) => (
-                      <tr key={idx}>
-                        <td>{result.id}</td>
-                        <td>{result.clientName}</td>
-                        <td>{result.oppName}</td>
-                        <td>
-                          <div className="tags-cell">
-                            {result.tags && result.tags.length > 0 ? (
-                              result.tags.map((tag, i) => (
-                                <span key={i} className={`tag tag-${tag.toLowerCase()}`}>{tag}</span>
-                              ))
-                            ) : (
-                              <span className="tag tag-none">None</span>
-                            )}
-                          </div>
-                        </td>
-                        <td>{result.confidence}%</td>
-                        <td className="rationale-cell">{result.rationale}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+          <div className="info-box-compact">
+            <strong>How it works:</strong> Filters US-Comms & Media opportunities • AI-powered tagging • Exports results
+          </div>
 
           <footer>
             <p>Powered by OpenAI GPT-4o-mini • AI-driven opportunity analysis</p>
