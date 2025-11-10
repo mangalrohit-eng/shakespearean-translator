@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createTaggedExcel } from '@/lib/excel/writer'
+import { createExcelOutput } from '@/lib/excel/writer'
 import type { AnalyzedOpportunity } from '@/lib/types'
 
 export async function POST(request: Request) {
@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     }
 
     // Generate Excel file from analyzed results
-    const excelBuffer = await createTaggedExcel(results as AnalyzedOpportunity[])
+    const excelBuffer = createExcelOutput(results as AnalyzedOpportunity[])
 
     // Return Excel file as blob
     return new NextResponse(excelBuffer, {
