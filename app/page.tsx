@@ -36,6 +36,8 @@ export default function Home() {
   const [downloadStatus, setDownloadStatus] = useState<'idle' | 'downloading' | 'success' | 'error'>('idle')
   const abortControllerRef = useRef<AbortController | null>(null)
   const logEndRef = useRef<HTMLDivElement>(null)
+  const lastUpdateRef = useRef<number>(Date.now())
+  const pendingUpdatesRef = useRef<any[]>([])
 
   useEffect(() => {
     if (logEndRef.current) {
@@ -62,7 +64,7 @@ export default function Home() {
     }
   }
 
-  function addLog(agent: string, message: string, type: 'info' | 'success' | 'processing', detailedData?: any) {
+  function addLog(agent: string, message: string, type: 'info' | 'success' | 'processing' | 'error', detailedData?: any) {
     const log: AgentLog = {
       id: Date.now().toString() + Math.random(),
       timestamp: new Date().toLocaleTimeString(),
@@ -71,7 +73,11 @@ export default function Home() {
       type,
       detailedData
     }
-    setAgentLogs(prev => [...prev, log])
+    setAgentLogs(prev => {
+      const newLogs = [...prev, log]
+      // Keep only last 100 logs to prevent memory issues
+      return newLogs.slice(-100)
+    })
   }
 
   function getMessageClass(message: string) {
@@ -146,20 +152,53 @@ export default function Home() {
       const reader = response.body?.getReader()
       const decoder = new TextDecoder()
       let buffer = ''
+      let updateQueue: any[] = []
+      let lastFlush = Date.now()
+
+      // Flush queued updates every 150ms to prevent overwhelming React
+      const flushUpdates = () => {
+        if (updateQueue.length === 0) return
+        
+        updateQueue.forEach(update => {
+          if (update.type === 'log') {
+            addLog(update.agent, update.action, update.logType, update.details)
+          } else if (update.type === 'progress') {
+            setProgress(update.progress)
+            setProgressStatus(update.status)
+          } else if (update.type === 'result') {
+            setResults(prev => [...prev, update.opportunity])
+            setShowResults(true)
+          }
+        })
+        
+        updateQueue = []
+        lastFlush = Date.now()
+      }
 
       if (reader) {
-        while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
+        const flushInterval = setInterval(() => {
+          if (Date.now() - lastFlush > 100) {
+            flushUpdates()
+          }
+        }, 100)
 
-          buffer += decoder.decode(value, { stream: true })
-          const lines = buffer.split('\n')
-          buffer = lines.pop() || ''
+        try {
+          while (true) {
+            const { done, value } = await reader.read()
+            if (done) {
+              clearInterval(flushInterval)
+              flushUpdates() // Flush any remaining updates
+              break
+            }
 
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              try {
-                const data = JSON.parse(line.slice(6))
+            buffer += decoder.decode(value, { stream: true })
+            const lines = buffer.split('\n')
+            buffer = lines.pop() || ''
+
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                try {
+                  const data = JSON.parse(line.slice(6))
                 
                 if (data.type === 'agent') {
                   // Real agent activity from backend with REAL data
@@ -176,29 +215,49 @@ export default function Home() {
                     logType = 'success'
                   }
                   
-                  addLog(data.agent, data.action, logType, data.details)
-                  setProgress(prev => Math.min(prev + 3, 90))
+                  // Queue the log update instead of applying immediately
+                  updateQueue.push({
+                    type: 'log',
+                    agent: data.agent,
+                    action: data.action,
+                    logType,
+                    details: data.details
+                  })
                   
                   // Update progress status with current activity
+                  let statusUpdate = ''
                   if (data.action.includes('Analyzing opportunity')) {
-                    setProgressStatus(`${data.action}`)
+                    statusUpdate = `${data.action}`
                   } else if (data.action.includes('Retry')) {
-                    setProgressStatus(`Retrying failed opportunity...`)
+                    statusUpdate = `Retrying failed opportunity...`
                   } else if (data.action.includes('waiting for')) {
-                    setProgressStatus(`Waiting for AI response...`)
+                    statusUpdate = `Waiting for AI response...`
+                  }
+                  
+                  if (statusUpdate) {
+                    updateQueue.push({
+                      type: 'progress',
+                      progress: Math.min((updateQueue.filter(u => u.type === 'log').length / 10) * 90, 90),
+                      status: statusUpdate
+                    })
                   }
                 } else if (data.type === 'progress') {
                   const statusText = `Analyzing ${data.current} of ${data.total} opportunities`
-                  if (data.currentOpp) {
-                    setProgressStatus(`${statusText}: "${data.currentOpp.substring(0, 50)}${data.currentOpp.length > 50 ? '...' : ''}"`)
-                  } else {
-                    setProgressStatus(statusText)
-                  }
-                  setProgress((data.current / data.total) * 90)
+                  const status = data.currentOpp 
+                    ? `${statusText}: "${data.currentOpp.substring(0, 50)}${data.currentOpp.length > 50 ? '...' : ''}"`
+                    : statusText
+                  
+                  updateQueue.push({
+                    type: 'progress',
+                    progress: (data.current / data.total) * 90,
+                    status
+                  })
                 } else if (data.type === 'result') {
-                  // Collect results for preview and show immediately
-                  setResults(prev => [...prev, data.opportunity])
-                  setShowResults(true) // Show results as soon as first one arrives
+                  // Queue result update
+                  updateQueue.push({
+                    type: 'result',
+                    opportunity: data.opportunity
+                  })
                 } else if (data.type === 'complete') {
                   setProgress(100)
                   setProgressStatus('Complete!')
@@ -220,6 +279,9 @@ export default function Home() {
               }
             }
           }
+        } catch (err: any) {
+          clearInterval(flushInterval)
+          throw err
         }
       }
     } catch (err: any) {
@@ -228,7 +290,7 @@ export default function Home() {
         return
       }
       setError(err instanceof Error ? err.message : 'An error occurred')
-      addLog('System', `Error: ${err instanceof Error ? err.message : 'Unknown error'}`, 'info')
+      addLog('System', `Error: ${err instanceof Error ? err.message : 'Unknown error'}`, 'error')
     } finally {
       setLoading(false)
       abortControllerRef.current = null
