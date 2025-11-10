@@ -2964,14 +2964,14 @@ footer {
 }
 
 .download-excel-btn {
-  display: flex;
+  display: inline-flex; /* Changed from flex to inline-flex */
   align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
+  gap: 6px;
+  padding: 8px 16px;
   background: linear-gradient(135deg, var(--accenture-purple) 0%, #8B00CC 100%);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -2979,6 +2979,7 @@ footer {
   font-family: inherit;
   position: relative;
   overflow: hidden;
+  white-space: nowrap;
 }
 
 .download-excel-btn::after {
@@ -3020,6 +3021,38 @@ footer {
 
 .download-excel-btn:hover svg {
   transform: translateY(2px);
+}
+
+.download-excel-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.download-excel-btn.downloading {
+  background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+}
+
+.download-excel-btn.success {
+  background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+}
+
+.download-excel-btn.error {
+  background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+}
+
+/* Spinner animation for downloading state */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
 }
 
 /* Results Summary Stats */
@@ -3646,9 +3679,16 @@ select:focus-visible {
   flex-shrink: 0;
 }
 
+/* Emails Container */
+.emails-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 24px;
+}
+
 /* Email View */
 .email-view {
-  margin-top: 24px;
   background: rgba(10, 10, 20, 0.6);
   border: 1px solid rgba(161, 0, 255, 0.2);
   border-radius: 8px;
@@ -3754,4 +3794,44 @@ select:focus-visible {
 
 .email-content .email-table tbody tr:last-child td {
   border-bottom: none;
+}
+
+/* Email Actions */
+.email-actions {
+  padding: 16px 20px;
+  background: rgba(161, 0, 255, 0.05);
+  border-top: 1px solid rgba(161, 0, 255, 0.2);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.copy-email-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--accenture-purple);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: inherit;
+}
+
+.copy-email-btn:hover {
+  background: var(--accenture-dark-purple);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(161, 0, 255, 0.3);
+}
+
+.copy-email-btn:active {
+  transform: translateY(0);
+}
+
+.copy-email-btn svg {
+  stroke: white;
+  flex-shrink: 0;
 }
