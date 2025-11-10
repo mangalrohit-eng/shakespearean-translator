@@ -261,8 +261,9 @@ body {
 .agent-logs {
   flex: 1;
   overflow-y: auto;
-  overflow-x: visible;
+  overflow-x: hidden;
   padding: 16px;
+  contain: layout; /* Prevent scroll from affecting parent */
 }
 
 .no-logs {
@@ -3400,6 +3401,7 @@ select:focus-visible {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
+  display: none !important; /* Completely remove from layout when collapsed */
 }
 
 .agent-sidebar.collapsed .sidebar-toggle-handle {

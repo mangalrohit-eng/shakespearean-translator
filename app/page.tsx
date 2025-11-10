@@ -40,15 +40,25 @@ export default function Home() {
   const pendingUpdatesRef = useRef<any[]>([])
 
   useEffect(() => {
-    if (logEndRef.current) {
-      logEndRef.current.scrollIntoView({ behavior: 'smooth' })
+    // Only auto-scroll logs when sidebar is open and there are logs
+    if (logEndRef.current && isSidebarOpen && agentLogs.length > 0) {
+      logEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
     }
-  }, [agentLogs])
+  }, [agentLogs, isSidebarOpen])
 
   function toggleSidebar() {
     const newState = !isSidebarOpen
     setIsSidebarOpen(newState)
     localStorage.setItem('agentSidebarOpen', String(newState))
+    
+    // Prevent any scroll behavior when toggling
+    if (typeof window !== 'undefined') {
+      // Keep current scroll position
+      const scrollY = window.scrollY
+      setTimeout(() => {
+        window.scrollTo(0, scrollY)
+      }, 0)
+    }
   }
 
   function handleStop() {
