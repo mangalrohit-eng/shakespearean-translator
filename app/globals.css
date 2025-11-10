@@ -215,7 +215,7 @@ body {
   top: 64px;
   bottom: 0;
   z-index: 50;
-  overflow: visible;
+  overflow: visible !important; /* Ensure toggle button is always visible */
   box-shadow: -2px 0 16px rgba(0, 0, 0, 0.15);
   border-left: 1px solid #2A2A2A;
 }
@@ -3392,6 +3392,7 @@ select:focus-visible {
   padding: 0;
   overflow: visible !important; /* Allow toggle button to be visible */
   border-left: none;
+  position: relative; /* Ensure button positioning works */
 }
 
 .agent-sidebar.collapsed .sidebar-header,
@@ -3402,10 +3403,16 @@ select:focus-visible {
 }
 
 .agent-sidebar.collapsed .sidebar-toggle-handle {
-  left: -32px; /* Position it outside the collapsed sidebar */
+  left: -32px !important; /* Position it visible when sidebar is collapsed */
   border-radius: 8px 0 0 8px;
   background: var(--accenture-purple) !important;
   box-shadow: -4px 0 12px rgba(161, 0, 255, 0.4);
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  z-index: 10000 !important; /* Make sure it's on top */
+  display: flex !important;
+  transform: translateY(-50%) !important; /* Maintain centering */
 }
 
 .sidebar-header {
@@ -3428,6 +3435,7 @@ select:focus-visible {
   border-radius: 8px 0 0 8px;
   cursor: pointer;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   transition: all 0.3s;

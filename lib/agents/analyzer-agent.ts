@@ -81,6 +81,24 @@ Describe your analysis strategy in 2-3 sentences.`
         timestamp: new Date().toISOString(),
       })
 
+      // Add "waiting for AI" message before analysis
+      agentLogs.push({
+        agent: 'AnalyzerAgent',
+        action: `⏳ Waiting for AI analysis of "${opp.opportunityName.substring(0, 50)}${opp.opportunityName.length > 50 ? '...' : ''}"`,
+        status: 'active',
+        timestamp: new Date().toISOString(),
+      })
+
+      // Stream the waiting message immediately
+      if (onUpdate) {
+        onUpdate({
+          agentLogs: [...agentLogs],
+          progressUpdates: [...progressUpdates],
+          analyzedOpportunities: [...analyzedOpportunities],
+          currentStep: 'analyzing',
+        })
+      }
+
       try {
         // Analyze this opportunity using OpenAI with retry logic
         let analyzed: AnalyzedOpportunity
@@ -98,10 +116,20 @@ Describe your analysis strategy in 2-3 sentences.`
               console.error(`Failed to analyze opportunity ${opp.id} after ${maxRetries} retries:`, error)
               agentLogs.push({
                 agent: 'AnalyzerAgent',
-                action: `⚠️ Failed to analyze "${opp.opportunityName.substring(0, 40)}..." after ${maxRetries} attempts. Tagging as "None". Error: ${error.message}`,
+                action: `❌ Failed to analyze "${opp.opportunityName.substring(0, 40)}..." after ${maxRetries} attempts. Continuing with next opportunity. Error: ${error.message}`,
                 status: 'error',
                 timestamp: new Date().toISOString(),
               })
+              
+              // Stream error message immediately
+              if (onUpdate) {
+                onUpdate({
+                  agentLogs: [...agentLogs],
+                  progressUpdates: [...progressUpdates],
+                  analyzedOpportunities: [...analyzedOpportunities],
+                  currentStep: 'analyzing',
+                })
+              }
               
               // Create fallback result
               analyzed = {
@@ -113,26 +141,56 @@ Describe your analysis strategy in 2-3 sentences.`
               break
             }
             // Wait before retry (exponential backoff)
-            await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000))
+            const waitTime = Math.pow(2, retries)
             agentLogs.push({
               agent: 'AnalyzerAgent',
-              action: `⚠️ Retry ${retries}/${maxRetries} for "${opp.opportunityName.substring(0, 40)}..." due to error: ${error.message}`,
+              action: `⚠️ Retry ${retries}/${maxRetries} for "${opp.opportunityName.substring(0, 40)}..." - waiting ${waitTime}s before retry. Error: ${error.message}`,
               status: 'active',
               timestamp: new Date().toISOString(),
             })
+            
+            // Stream retry message immediately
+            if (onUpdate) {
+              onUpdate({
+                agentLogs: [...agentLogs],
+                progressUpdates: [...progressUpdates],
+                analyzedOpportunities: [...analyzedOpportunities],
+                currentStep: 'analyzing',
+              })
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, waitTime * 1000))
           }
         }
         
         analyzedOpportunities.push(analyzed!)
+        
+        // Log continuation message
+        agentLogs.push({
+          agent: 'AnalyzerAgent',
+          action: `➡️ Continuing with next opportunity (${current + 1}/${totalOpportunities})`,
+          status: 'active',
+          timestamp: new Date().toISOString(),
+        })
       } catch (error: any) {
         // Catastrophic error - log and continue with next opportunity
         console.error(`Critical error analyzing opportunity ${opp.id}:`, error)
         agentLogs.push({
           agent: 'AnalyzerAgent',
-          action: `❌ Critical error for "${opp.opportunityName.substring(0, 40)}...": ${error.message}. Skipping.`,
+          action: `❌ Critical error for "${opp.opportunityName.substring(0, 40)}...": ${error.message}. Continuing with next opportunity.`,
           status: 'error',
           timestamp: new Date().toISOString(),
         })
+        
+        // Stream error message immediately
+        if (onUpdate) {
+          onUpdate({
+            agentLogs: [...agentLogs],
+            progressUpdates: [...progressUpdates],
+            analyzedOpportunities: [...analyzedOpportunities],
+            currentStep: 'analyzing',
+          })
+        }
         
         // Add a placeholder result so we don't lose track
         analyzedOpportunities.push({
@@ -192,19 +250,31 @@ Describe your analysis strategy in 2-3 sentences.`
       }
     }
 
-    // Final summary
+    // Final summary with success/failure breakdown
     const aiCount = analyzedOpportunities.filter(a => a.tags.includes('AI')).length
     const analyticsCount = analyzedOpportunities.filter(a => a.tags.includes('Analytics')).length
     const dataCount = analyzedOpportunities.filter(a => a.tags.includes('Data')).length
     const taggedCount = analyzedOpportunities.filter(a => a.tags.length > 0).length
+    const failedCount = analyzedOpportunities.filter(a => 
+      a.rationale && (a.rationale.includes('failed') || a.rationale.includes('error') || a.rationale.includes('Critical error'))
+    ).length
+    const successCount = totalOpportunities - failedCount
+
+    let summaryAction = `✅ Analysis complete: ${successCount}/${totalOpportunities} opportunities analyzed successfully.`
+    if (failedCount > 0) {
+      summaryAction += ` ⚠️ ${failedCount} failed (continued with analysis).`
+    }
+    summaryAction += ` Tags: AI=${aiCount}, Analytics=${analyticsCount}, Data=${dataCount}, Untagged=${totalOpportunities - taggedCount}.`
 
     agentLogs.push({
       agent: 'AnalyzerAgent',
-      action: `Analysis complete: ${taggedCount}/${totalOpportunities} opportunities tagged. Breakdown: AI=${aiCount}, Analytics=${analyticsCount}, Data=${dataCount}. Sending results to Orchestrator.`,
-      status: 'complete',
+      action: summaryAction,
+      status: failedCount > 0 ? 'active' : 'complete',
       timestamp: new Date().toISOString(),
       details: {
         total: totalOpportunities,
+        successful: successCount,
+        failed: failedCount,
         tagged: taggedCount,
         aiCount,
         analyticsCount,

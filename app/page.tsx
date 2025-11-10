@@ -163,13 +163,36 @@ export default function Home() {
                 
                 if (data.type === 'agent') {
                   // Real agent activity from backend with REAL data
-                  const logType = data.status === 'active' ? 'processing' : data.status === 'complete' ? 'success' : 'info'
+                  let logType: 'processing' | 'success' | 'info' | 'error' = 'info'
+                  
+                  // Determine log type based on status and action content
+                  if (data.status === 'error' || data.action.includes('❌') || data.action.includes('Failed')) {
+                    logType = 'error'
+                  } else if (data.action.includes('⚠️') || data.action.includes('Retry')) {
+                    logType = 'processing' // Show retries as processing
+                  } else if (data.status === 'active' || data.action.includes('Analyzing') || data.action.includes('waiting')) {
+                    logType = 'processing'
+                  } else if (data.status === 'complete' || data.action.includes('✓') || data.action.includes('Successfully')) {
+                    logType = 'success'
+                  }
+                  
                   addLog(data.agent, data.action, logType, data.details)
                   setProgress(prev => Math.min(prev + 3, 90))
+                  
+                  // Update progress status with current activity
+                  if (data.action.includes('Analyzing opportunity')) {
+                    setProgressStatus(`${data.action}`)
+                  } else if (data.action.includes('Retry')) {
+                    setProgressStatus(`Retrying failed opportunity...`)
+                  } else if (data.action.includes('waiting for')) {
+                    setProgressStatus(`Waiting for AI response...`)
+                  }
                 } else if (data.type === 'progress') {
-                  setProgressStatus(`Analyzing opportunity ${data.current} of ${data.total}`)
+                  const statusText = `Analyzing ${data.current} of ${data.total} opportunities`
                   if (data.currentOpp) {
-                    setProgressStatus(prev => `${prev} - "${data.currentOpp}"`)
+                    setProgressStatus(`${statusText}: "${data.currentOpp.substring(0, 50)}${data.currentOpp.length > 50 ? '...' : ''}"`)
+                  } else {
+                    setProgressStatus(statusText)
                   }
                   setProgress((data.current / data.total) * 90)
                 } else if (data.type === 'result') {
