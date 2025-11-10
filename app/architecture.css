@@ -59,9 +59,21 @@
 
 /* Main Content */
 .arch-content-interactive {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 40px 20px;
+  position: relative;
+}
+
+/* Two-column layout */
+.architecture-layout {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 30px;
+  align-items: start;
+}
+
+.diagram-section {
   position: relative;
 }
 
@@ -240,13 +252,13 @@
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 24px;
-  margin-top: 32px;
+  padding: 20px;
+  margin-top: 20px;
 }
 
 .architecture-legend h3 {
-  margin: 0 0 16px 0;
-  font-size: 1.25rem;
+  margin: 0 0 12px 0;
+  font-size: 1.1rem;
   font-weight: 700;
   color: white;
 }
@@ -290,6 +302,18 @@
 }
 
 /* Responsive */
+@media (max-width: 1200px) {
+  .architecture-layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .workflow-steps-panel {
+    position: static;
+    max-height: none;
+    margin-top: 30px;
+  }
+}
+
 @media (max-width: 1024px) {
   .agent-details-panel {
     position: static;
@@ -300,6 +324,10 @@
   
   .diagram-container {
     padding: 20px 10px;
+  }
+  
+  .arch-content-interactive {
+    max-width: 100%;
   }
 }
 
@@ -332,6 +360,14 @@
   .workflow-diagram {
     height: 600px;
   }
+  
+  .steps-list {
+    gap: 10px;
+  }
+  
+  .step-item {
+    padding: 12px;
+  }
 }
 
 /* Smooth scrolling */
@@ -353,26 +389,52 @@
   background: #8000cc;
 }
 
-/* Workflow Steps */
-.workflow-steps {
+/* Workflow Steps Panel - Right Side */
+.workflow-steps-panel {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 24px;
-  margin-top: 32px;
+  position: sticky;
+  top: 80px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accenture-purple) rgba(255, 255, 255, 0.1);
 }
 
-.workflow-steps h3 {
-  margin: 0 0 20px 0;
-  font-size: 1.25rem;
+.workflow-steps-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.workflow-steps-panel::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.workflow-steps-panel::-webkit-scrollbar-thumb {
+  background: var(--accenture-purple);
+  border-radius: 3px;
+}
+
+.workflow-steps-panel h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.35rem;
   font-weight: 700;
   color: white;
 }
 
-.steps-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
+.steps-subtitle {
+  margin: 0 0 20px 0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
+}
+
+.steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .step-item {

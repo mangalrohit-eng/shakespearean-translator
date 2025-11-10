@@ -181,8 +181,10 @@ export default function ArchitecturePage() {
       {/* Main Content */}
       <div className="arch-content-interactive">
         
-        {/* SVG Diagram */}
-        <div className="diagram-container">
+        <div className="architecture-layout">
+          {/* Left Side - SVG Diagram */}
+          <div className="diagram-section">
+            <div className="diagram-container">
           <svg viewBox="0 0 800 700" className="workflow-diagram">
             <defs>
               {/* Arrow markers */}
@@ -243,43 +245,34 @@ export default function ArchitecturePage() {
                       </circle>
                     )}
                     
-                    {/* Step number badge and label - only show for active step */}
+                    {/* Step number badge only - no text on connectors */}
                     {isActive && (
                       <g>
                         {/* Step number badge */}
                         <circle
                           cx={(fromAgent.x + toAgent.x) / 2}
-                          cy={(fromAgent.y + toAgent.y) / 2 - 25}
-                          r="14"
+                          cy={(fromAgent.y + toAgent.y) / 2}
+                          r="16"
                           fill="#a100ff"
                           stroke="white"
-                          strokeWidth="2"
-                        />
-                        <text
-                          x={(fromAgent.x + toAgent.x) / 2}
-                          y={(fromAgent.y + toAgent.y) / 2 - 21}
-                          fill="white"
-                          fontSize="12"
-                          fontWeight="700"
-                          textAnchor="middle"
+                          strokeWidth="2.5"
                         >
-                          {conn.stepNumber}
-                        </text>
-                        
-                        {/* Connection label with better contrast */}
+                          <animate
+                            attributeName="r"
+                            values="16;18;16"
+                            dur="1.5s"
+                            repeatCount="indefinite"
+                          />
+                        </circle>
                         <text
                           x={(fromAgent.x + toAgent.x) / 2}
                           y={(fromAgent.y + toAgent.y) / 2 + 5}
                           fill="white"
-                          fontSize="12"
+                          fontSize="13"
                           fontWeight="700"
                           textAnchor="middle"
-                          className="connection-label"
-                          stroke="#a100ff"
-                          strokeWidth="3"
-                          paintOrder="stroke"
                         >
-                          {conn.label}
+                          {conn.stepNumber}
                         </text>
                       </g>
                     )}
@@ -383,6 +376,51 @@ export default function ArchitecturePage() {
               })}
             </g>
           </svg>
+            </div>
+            {/* Legend below diagram */}
+            <div className="architecture-legend">
+              <h3>System Components</h3>
+              <div className="legend-items">
+                <div className="legend-item">
+                  <div className="legend-circle" style={{ background: '#00d4ff' }}></div>
+                  <span>System I/O</span>
+                </div>
+                <div className="legend-item">
+                  <div className="legend-circle" style={{ background: '#a100ff' }}></div>
+                  <span>Orchestrator</span>
+                </div>
+                <div className="legend-item">
+                  <div className="legend-circle" style={{ background: '#ff6b00' }}></div>
+                  <span>AI Agents (LLM-powered)</span>
+                </div>
+                <div className="legend-item">
+                  <div className="legend-circle" style={{ background: '#00ff88' }}></div>
+                  <span>Output</span>
+                </div>
+              </div>
+              <p className="legend-note">💡 Hover over agents to see detailed information.</p>
+            </div>
+          </div>
+
+          {/* Right Side - Workflow Steps */}
+          <div className="workflow-steps-panel">
+            <h3>Workflow Sequence</h3>
+            <p className="steps-subtitle">Follow the numbered steps to understand the data flow</p>
+            <div className="steps-list">
+              {connections.map((conn) => (
+                <div 
+                  key={conn.stepNumber} 
+                  className={`step-item ${animationStep >= conn.step ? 'active' : ''}`}
+                >
+                  <div className="step-number">{conn.stepNumber}</div>
+                  <div className="step-content">
+                    <div className="step-title">{conn.label}</div>
+                    <div className="step-description">{conn.description}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Agent Details Panel */}
@@ -473,48 +511,6 @@ export default function ArchitecturePage() {
           </div>
         )}
 
-        {/* Legend */}
-        <div className="architecture-legend">
-          <h3>System Components</h3>
-          <div className="legend-items">
-            <div className="legend-item">
-              <div className="legend-circle" style={{ background: '#00d4ff' }}></div>
-              <span>System I/O</span>
-            </div>
-            <div className="legend-item">
-              <div className="legend-circle" style={{ background: '#a100ff' }}></div>
-              <span>Orchestrator</span>
-            </div>
-            <div className="legend-item">
-              <div className="legend-circle" style={{ background: '#ff6b00' }}></div>
-              <span>AI Agents (LLM-powered)</span>
-            </div>
-            <div className="legend-item">
-              <div className="legend-circle" style={{ background: '#00ff88' }}></div>
-              <span>Output</span>
-            </div>
-          </div>
-          <p className="legend-note">💡 Hover over agents to see detailed information. Watch the animated data flow through the system.</p>
-        </div>
-
-        {/* Workflow Steps */}
-        <div className="workflow-steps">
-          <h3>Workflow Sequence</h3>
-          <div className="steps-grid">
-            {connections.map((conn) => (
-              <div 
-                key={conn.stepNumber} 
-                className={`step-item ${animationStep >= conn.step ? 'active' : ''}`}
-              >
-                <div className="step-number">{conn.stepNumber}</div>
-                <div className="step-content">
-                  <div className="step-title">{conn.label}</div>
-                  <div className="step-description">{conn.description}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
 
       </div>
     </div>
