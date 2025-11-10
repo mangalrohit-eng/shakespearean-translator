@@ -65,15 +65,23 @@ Instructions:
     ? 'The description provides crucial details - give it significant weight in your analysis' 
     : 'Without a description, make your best judgment based on the opportunity name alone'}
 3. Apply the custom rules above (if provided) to make your decision
-4. Assign appropriate tags (can be multiple: AI, Analytics, Data, or None)
-5. Provide a clear rationale explaining your decision
-6. Rate your confidence (0-100%) ${!hasDescription ? '- confidence may be lower without description' : ''}
+4. Assign appropriate tags: "AI", "Analytics", and/or "Data" (can be multiple or EMPTY if not relevant)
+5. IMPORTANT: If the opportunity is NOT related to AI, Analytics, or Data, return an EMPTY array for tags - do NOT use "None" or any other placeholder
+6. Provide a clear rationale explaining your decision
+7. Rate your confidence (0-100%) ${!hasDescription ? '- confidence may be lower without description' : ''}
 
 Respond in JSON format:
 {
   "tags": ["AI", "Analytics"],
   "rationale": "Clear explanation of why these tags were assigned",
   "confidence": 85
+}
+
+Or if NOT relevant:
+{
+  "tags": [],
+  "rationale": "This opportunity does not involve AI, Analytics, or Data work",
+  "confidence": 90
 }`
 
   return prompt

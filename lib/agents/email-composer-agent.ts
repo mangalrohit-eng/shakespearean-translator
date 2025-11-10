@@ -21,8 +21,11 @@ export async function emailComposerAgent(
   })
 
   // Filter to only include opportunities with actual tags (AI, Analytics, or Data)
+  // Exclude opportunities with no tags or only "None" tag
   const taggedOpportunities = state.analyzedOpportunities.filter(opp => 
-    opp.tags && opp.tags.length > 0
+    opp.tags && 
+    opp.tags.length > 0 && 
+    !opp.tags.every(tag => tag.toLowerCase() === 'none')
   )
 
   onUpdate?.({
