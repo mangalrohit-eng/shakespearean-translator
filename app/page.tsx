@@ -274,8 +274,9 @@ export default function Home() {
                 } else if (data.type === 'error') {
                   throw new Error(data.message)
                 }
-              } catch (e: any) {
-                console.warn('Failed to parse SSE data:', e)
+                } catch (e: any) {
+                  console.warn('Failed to parse SSE data:', e)
+                }
               }
             }
           }
