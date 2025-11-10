@@ -3403,7 +3403,11 @@ select:focus-visible {
 }
 
 .agent-sidebar.collapsed .sidebar-toggle-handle {
-  left: -32px !important; /* Position it visible when sidebar is collapsed */
+  position: fixed !important; /* Fixed positioning when collapsed */
+  right: 0 !important; /* Stick to right edge of viewport */
+  left: auto !important;
+  top: 50% !important; /* Center vertically on screen */
+  transform: translateY(-50%) !important;
   border-radius: 8px 0 0 8px;
   background: var(--accenture-purple) !important;
   box-shadow: -4px 0 12px rgba(161, 0, 255, 0.4);
@@ -3412,7 +3416,8 @@ select:focus-visible {
   pointer-events: auto !important;
   z-index: 10000 !important; /* Make sure it's on top */
   display: flex !important;
-  transform: translateY(-50%) !important; /* Maintain centering */
+  width: 36px !important; /* Slightly wider when collapsed for easier clicking */
+  height: 80px !important; /* Taller for easier clicking */
 }
 
 .sidebar-header {
