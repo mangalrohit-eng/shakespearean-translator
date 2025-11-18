@@ -342,6 +342,11 @@ body {
   background: rgba(0, 112, 210, 0.1);
 }
 
+.log-entry.log-error {
+  border-left-color: var(--error-red);
+  background: rgba(225, 0, 70, 0.1);
+}
+
 .log-header {
   display: flex;
   justify-content: space-between;

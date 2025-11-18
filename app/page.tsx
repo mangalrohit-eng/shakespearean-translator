@@ -8,7 +8,7 @@ interface AgentLog {
   timestamp: string
   agent: string
   message: string
-  type: 'info' | 'success' | 'processing'
+  type: 'info' | 'success' | 'processing' | 'error'
   detailedData?: any
 }
 
