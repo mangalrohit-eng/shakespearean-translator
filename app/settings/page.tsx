@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 interface Instruction {
   id: string
   text: string
-  category: 'AI' | 'Analytics' | 'Data'
+  category: 'AI' | 'Gen AI' | 'Analytics' | 'Data'
   createdAt: string
 }
 
@@ -14,7 +14,7 @@ export default function SettingsPage() {
   const router = useRouter()
   const [instructions, setInstructions] = useState<Instruction[]>([])
   const [newInstruction, setNewInstruction] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState<'AI' | 'Analytics' | 'Data'>('AI')
+  const [selectedCategory, setSelectedCategory] = useState<'AI' | 'Gen AI' | 'Analytics' | 'Data'>('AI')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editText, setEditText] = useState('')
 
@@ -35,41 +35,132 @@ export default function SettingsPage() {
     }
     
     if (!loaded) {
-      // Set default instructions
+      // Set default instructions - focus on nature of work, not just keywords
       const defaultInstructions: Instruction[] = [
+        // Traditional AI Rules
         {
           id: '1',
-          text: 'Contains keywords: machine learning, neural network, deep learning, computer vision, NLP',
+          text: 'Building predictive models or classification systems (e.g., fraud detection, customer churn prediction, risk scoring, forecasting demand)',
           category: 'AI',
           createdAt: new Date().toISOString(),
         },
         {
           id: '2',
-          text: 'Mentions: chatbot, recommendation engine, predictive model, AI automation',
+          text: 'Implementing computer vision or image recognition (e.g., object detection, facial recognition, quality inspection, document scanning)',
           category: 'AI',
           createdAt: new Date().toISOString(),
         },
         {
           id: '3',
-          text: 'Contains: dashboard, reporting, business intelligence, visualization, insights',
-          category: 'Analytics',
+          text: 'Natural Language Processing for analysis or extraction (e.g., sentiment analysis, entity extraction, text classification, document understanding)',
+          category: 'AI',
           createdAt: new Date().toISOString(),
         },
         {
           id: '4',
-          text: 'Mentions: data analytics, predictive analytics, customer analytics, performance metrics',
-          category: 'Analytics',
+          text: 'Recommendation systems or personalization engines (e.g., product recommendations, content matching, next-best-action)',
+          category: 'AI',
           createdAt: new Date().toISOString(),
         },
         {
           id: '5',
-          text: 'Contains: data lake, data warehouse, ETL, data pipeline, data migration',
+          text: 'Optimization and automation using ML (e.g., supply chain optimization, automated decision-making, intelligent process automation)',
+          category: 'AI',
+          createdAt: new Date().toISOString(),
+        },
+        
+        // Gen AI Rules
+        {
+          id: '6',
+          text: 'Building conversational AI or intelligent assistants using LLMs (e.g., chatbots with GPT/Claude, virtual agents, AI customer service)',
+          category: 'Gen AI',
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: '7',
+          text: 'Content generation or creative AI applications (e.g., automated content writing, marketing copy generation, image/video generation, code generation)',
+          category: 'Gen AI',
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: '8',
+          text: 'RAG systems or knowledge management with LLMs (e.g., enterprise search with AI, document Q&A, intelligent knowledge bases)',
+          category: 'Gen AI',
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: '9',
+          text: 'AI Copilot or augmentation tools (e.g., coding assistants, writing assistants, research assistants, workflow automation with AI)',
+          category: 'Gen AI',
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: '10',
+          text: 'Agentic AI or autonomous AI systems (e.g., AI agents that make decisions, multi-agent systems, AI workflow orchestration)',
+          category: 'Gen AI',
+          createdAt: new Date().toISOString(),
+        },
+        
+        // Analytics Rules
+        {
+          id: '11',
+          text: 'Business intelligence and reporting solutions (e.g., dashboards, KPI tracking, executive reporting, performance monitoring)',
+          category: 'Analytics',
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: '12',
+          text: 'Data visualization and insights discovery (e.g., interactive visualizations, exploratory analysis, trend analysis, pattern discovery)',
+          category: 'Analytics',
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: '13',
+          text: 'Customer or market analytics (e.g., customer segmentation, market basket analysis, customer journey analytics, cohort analysis)',
+          category: 'Analytics',
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: '14',
+          text: 'Operational or financial analytics (e.g., cost analysis, revenue analytics, operational efficiency metrics, financial reporting)',
+          category: 'Analytics',
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: '15',
+          text: 'Self-service analytics or data democratization (e.g., citizen analytics tools, business user reporting, ad-hoc analysis capabilities)',
+          category: 'Analytics',
+          createdAt: new Date().toISOString(),
+        },
+        
+        // Data Rules
+        {
+          id: '16',
+          text: 'Data platform modernization or infrastructure (e.g., data lake implementation, cloud data migration, data warehouse modernization, lakehouse architecture)',
           category: 'Data',
           createdAt: new Date().toISOString(),
         },
         {
-          id: '6',
-          text: 'Mentions: data engineering, data governance, data quality, master data management',
+          id: '17',
+          text: 'Data integration and ETL/ELT pipelines (e.g., data ingestion, real-time streaming, batch processing, data orchestration, data sync)',
+          category: 'Data',
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: '18',
+          text: 'Data governance and quality management (e.g., data cataloging, metadata management, data lineage, data quality rules, master data management)',
+          category: 'Data',
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: '19',
+          text: 'Data architecture and engineering foundations (e.g., schema design, data modeling, performance optimization, data security implementation)',
+          category: 'Data',
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: '20',
+          text: 'Data consolidation or unification projects (e.g., merging systems post-acquisition, single source of truth, 360-degree views, data harmonization)',
           category: 'Data',
           createdAt: new Date().toISOString(),
         },
@@ -133,6 +224,7 @@ export default function SettingsPage() {
   }
 
   const aiInstructions = instructions.filter(i => i.category === 'AI')
+  const genAiInstructions = instructions.filter(i => i.category === 'Gen AI')
   const analyticsInstructions = instructions.filter(i => i.category === 'Analytics')
   const dataInstructions = instructions.filter(i => i.category === 'Data')
 
@@ -165,7 +257,7 @@ export default function SettingsPage() {
         <div className="page-hero">
           <h1>Analysis Configuration</h1>
           <p className="hero-subtitle">
-            Define custom rules for identifying AI, Analytics, and Data opportunities
+            Define custom rules for identifying AI, Gen AI, Analytics, and Data opportunities
             <button className="help-tooltip-trigger" title="How to configure">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="12" height="12">
                 <circle cx="12" cy="12" r="10" strokeWidth="2"/>
@@ -202,6 +294,7 @@ export default function SettingsPage() {
             className="category-select"
           >
             <option value="AI">AI</option>
+            <option value="Gen AI">Gen AI</option>
             <option value="Analytics">Analytics</option>
             <option value="Data">Data</option>
           </select>
@@ -231,7 +324,7 @@ export default function SettingsPage() {
                 <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
               </svg>
             </div>
-            <h3>AI Instructions ({aiInstructions.length})</h3>
+            <h3>Traditional AI Instructions ({aiInstructions.length})</h3>
           </div>
           <div className="instruction-list">
             {aiInstructions.map((instruction) => (
@@ -282,6 +375,71 @@ export default function SettingsPage() {
             ))}
             {aiInstructions.length === 0 && (
               <p className="empty-state">No AI instructions defined</p>
+            )}
+          </div>
+        </div>
+
+        {/* Gen AI Instructions */}
+        <div className="instruction-category">
+          <div className="category-header genai">
+            <div className="category-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M2 17l10 5 10-5M2 12l10 5 10-5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+              </svg>
+            </div>
+            <h3>Gen AI Instructions ({genAiInstructions.length})</h3>
+          </div>
+          <div className="instruction-list">
+            {genAiInstructions.map((instruction) => (
+              <div key={instruction.id} className="instruction-item">
+                {editingId === instruction.id ? (
+                  <div className="edit-mode">
+                    <input
+                      type="text"
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      className="edit-input"
+                      autoFocus
+                    />
+                    <div className="edit-actions">
+                      <button
+                        onClick={() => handleSaveEdit(instruction.id)}
+                        className="save-edit-btn"
+                      >
+                        Save
+                      </button>
+                      <button onClick={handleCancelEdit} className="cancel-edit-btn">
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <p className="instruction-text">{instruction.text}</p>
+                    <div className="instruction-actions">
+                      <button
+                        onClick={() => handleEdit(instruction)}
+                        className="edit-icon-btn"
+                        title="Edit"
+                      >
+                        ✎
+                      </button>
+                      <button
+                        onClick={() => handleDelete(instruction.id)}
+                        className="delete-icon-btn"
+                        title="Delete"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+            {genAiInstructions.length === 0 && (
+              <p className="empty-state">No Gen AI instructions defined</p>
             )}
           </div>
         </div>

@@ -596,6 +596,10 @@ export default function Home() {
                       <span className="stat-label">AI</span>
                       <span className="stat-value">{results.filter(r => r.tags.includes('AI')).length}</span>
                     </div>
+                    <div className="summary-stat genai">
+                      <span className="stat-label">Gen AI</span>
+                      <span className="stat-value">{results.filter(r => r.tags.includes('Gen AI')).length}</span>
+                    </div>
                     <div className="summary-stat analytics">
                       <span className="stat-label">Analytics</span>
                       <span className="stat-value">{results.filter(r => r.tags.includes('Analytics')).length}</span>
@@ -625,7 +629,7 @@ export default function Home() {
                             <td>
                               <div className="tags-cell">
                                 {result.tags.map((tag: string, i: number) => (
-                                  <span key={i} className={`tag tag-${tag.toLowerCase()}`}>{tag}</span>
+                                  <span key={i} className={`tag tag-${tag.toLowerCase().replace(/\s+/g, '')}`}>{tag}</span>
                                 ))}
                                 {result.tags.length === 0 && <span className="tag tag-none">None</span>}
                               </div>

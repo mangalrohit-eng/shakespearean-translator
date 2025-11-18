@@ -40,6 +40,7 @@ export default function ResultsPage() {
   const stats = {
     total: results.length,
     aiCount: results.filter(r => r.tags.includes('AI')).length,
+    genAiCount: results.filter(r => r.tags.includes('Gen AI')).length,
     analyticsCount: results.filter(r => r.tags.includes('Analytics')).length,
     dataCount: results.filter(r => r.tags.includes('Data')).length,
     multiTagged: results.filter(r => r.tags.length > 1).length,
@@ -48,6 +49,10 @@ export default function ResultsPage() {
       : 0,
     totalValue: results.reduce((sum, r) => sum + (r.total || 0), 0),
   }
+
+  // Debug: Log stats to console
+  console.log('📊 Stats Dashboard:', stats)
+  console.log('🔍 Sample result tags:', results.slice(0, 3).map(r => ({ name: r.opportunityName, tags: r.tags })))
 
   const handleEdit = (id: string, currentTags: string[]) => {
     setEditingId(id)
@@ -122,7 +127,7 @@ export default function ResultsPage() {
   return (
     <div className="results-container">
       <div className="results-header">
-        <h1>📊 Analysis Results</h1>
+        <h1>📊 Analysis Results (Gen AI Enabled)</h1>
         <div className="header-actions">
           <button className="back-btn" onClick={handleBack}>
             ← Back
@@ -159,6 +164,15 @@ export default function ResultsPage() {
             <div className="stat-value">{stats.aiCount}</div>
             <div className="stat-label">AI Opportunities</div>
             <div className="stat-percent">{Math.round((stats.aiCount / stats.total) * 100)}%</div>
+          </div>
+        </div>
+
+        <div className="stat-card genai">
+          <div className="stat-icon">✨</div>
+          <div className="stat-content">
+            <div className="stat-value">{stats.genAiCount}</div>
+            <div className="stat-label">Gen AI</div>
+            <div className="stat-percent">{Math.round((stats.genAiCount / stats.total) * 100)}%</div>
           </div>
         </div>
 
@@ -310,6 +324,7 @@ export default function ResultsPage() {
                     <th>Client</th>
                     <th>Total</th>
                     <th>AI</th>
+                    <th>Gen AI</th>
                     <th>Analytics</th>
                     <th>Data</th>
                     <th>Avg Confidence</th>
@@ -321,6 +336,7 @@ export default function ResultsPage() {
                       <td className="client-name">{client.clientName}</td>
                       <td><strong>{client.total}</strong></td>
                       <td>{client.aiCount > 0 ? <span className="mini-badge ai">{client.aiCount}</span> : '-'}</td>
+                      <td>{client.genAiCount > 0 ? <span className="mini-badge genai">{client.genAiCount}</span> : '-'}</td>
                       <td>{client.analyticsCount > 0 ? <span className="mini-badge analytics">{client.analyticsCount}</span> : '-'}</td>
                       <td>{client.dataCount > 0 ? <span className="mini-badge data">{client.dataCount}</span> : '-'}</td>
                       <td>
@@ -367,7 +383,7 @@ export default function ResultsPage() {
                 <td>
                   {editingId === result.id ? (
                     <div className="tag-editor">
-                      {['AI', 'Analytics', 'Data'].map(tag => (
+                      {['AI', 'Gen AI', 'Analytics', 'Data'].map(tag => (
                         <label key={tag} className="tag-checkbox">
                           <input
                             type="checkbox"
@@ -382,7 +398,7 @@ export default function ResultsPage() {
                     <div className="tags">
                       {result.tags.length > 0 ? (
                         result.tags.map(tag => (
-                          <span key={tag} className={`tag tag-${tag.toLowerCase()}`}>
+                          <span key={tag} className={`tag tag-${tag.toLowerCase().replace(/\s+/g, '')}`}>
                             {tag}
                           </span>
                         ))

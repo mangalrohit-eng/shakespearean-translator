@@ -4,6 +4,7 @@ export interface ClientInsight {
   clientName: string
   total: number
   aiCount: number
+  genAiCount: number
   analyticsCount: number
   dataCount: number
   avgConfidence: number
@@ -39,6 +40,7 @@ export function generateInsights(opportunities: AnalyzedOpportunity[]): Analytic
         clientName: opp.accountName,
         total: 0,
         aiCount: 0,
+        genAiCount: 0,
         analyticsCount: 0,
         dataCount: 0,
         avgConfidence: 0,
@@ -49,6 +51,7 @@ export function generateInsights(opportunities: AnalyzedOpportunity[]): Analytic
     client.total++
     
     if (opp.tags.includes('AI')) client.aiCount++
+    if (opp.tags.includes('Gen AI')) client.genAiCount++
     if (opp.tags.includes('Analytics')) client.analyticsCount++
     if (opp.tags.includes('Data')) client.dataCount++
     client.avgConfidence += opp.confidence

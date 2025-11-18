@@ -8,9 +8,10 @@ export function createExcelOutput(opportunities: AnalyzedOpportunity[]): Buffer 
     'Opportunity Name': opp.opportunityName,
     'Deal Description': opp.dealDescription || '',
     'Industry': opp.industryName || '',
-    'Deal Size': opp.dealSize || '',
-    'Total': opp.total || '',
+    'Deal Size Category': opp.dealSize || '',
+    'Total Value ($)': opp.total || 0,
     'AI Tag': opp.tags.includes('AI') ? 'Yes' : 'No',
+    'Gen AI Tag': opp.tags.includes('Gen AI') ? 'Yes' : 'No',
     'Analytics Tag': opp.tags.includes('Analytics') ? 'Yes' : 'No',
     'Data Tag': opp.tags.includes('Data') ? 'Yes' : 'No',
     'Combined Tags': opp.tags.length > 0 ? opp.tags.join(', ') : 'None',
@@ -19,6 +20,22 @@ export function createExcelOutput(opportunities: AnalyzedOpportunity[]): Buffer 
   }))
 
   const worksheet = XLSX.utils.json_to_sheet(outputData)
+  
+  // Format Total Value column as currency
+  const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1')
+  const totalValueColIndex = Object.keys(outputData[0] || {}).indexOf('Total Value ($)')
+  
+  if (totalValueColIndex >= 0) {
+    const colLetter = XLSX.utils.encode_col(totalValueColIndex)
+    for (let row = range.s.r + 1; row <= range.e.r; row++) {
+      const cellAddress = `${colLetter}${row + 1}`
+      const cell = worksheet[cellAddress]
+      if (cell && typeof cell.v === 'number') {
+        cell.z = '$#,##0.00' // Excel currency format
+        cell.t = 'n' // Number type
+      }
+    }
+  }
   
   // Auto-size columns
   const maxWidth = 50

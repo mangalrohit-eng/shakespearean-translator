@@ -21,7 +21,6 @@ export async function excelReaderAgent(state: WorkflowState): Promise<Partial<Wo
       action: 'Analyzing uploaded Excel file structure',
       status: 'active' as const,
       timestamp: new Date().toISOString(),
-      details: 'Initializing Excel parser. Validating file buffer presence and preparing to extract opportunity data from spreadsheet.',
     },
   ]
 
@@ -61,13 +60,15 @@ Reason through this task and describe your approach in 2-3 sentences.`
     const rawData = parseExcelFile(state.fileBuffer)
 
     // Log completion with details
-    const sampleColumns = rawData.length > 0 ? Object.keys(rawData[0]).slice(0, 5).join(', ') : 'None'
     agentLogs.push({
       agent: 'ExcelReaderAgent',
-      action: `Successfully parsed Excel file - ${rawData.length} rows extracted`,
+      action: `Successfully parsed Excel file. Found ${rawData.length} total rows with columns: ID, Client Name, Opp Name, Client Group, etc.`,
       status: 'complete',
       timestamp: new Date().toISOString(),
-      details: `Tool Execution: parseExcelFile() completed. Data Structure Validated: ${sampleColumns}... | LLM Reasoning: ${reasoningResponse.content.toString().substring(0, 150)}... | Next: Sending ${rawData.length} rows to Orchestrator for routing decision.`,
+      details: {
+        totalRows: rawData.length,
+        columns: rawData.length > 0 ? Object.keys(rawData[0]) : [],
+      },
     })
 
     // Communicate results back to workflow

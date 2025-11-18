@@ -24,7 +24,7 @@ export interface AnalyzedOpportunity extends Opportunity {
 export interface CustomInstruction {
   id: string
   text: string
-  category: 'AI' | 'Analytics' | 'Data'
+  category: 'AI' | 'Analytics' | 'Data' | 'Gen AI'
   createdAt: string
 }
 
@@ -44,4 +44,6 @@ export interface ColumnMapping {
   dealDescription: string | null
   accountName: string | null
   industryName: string | null
+  dealSize: string | null
+  totalValue: string | null
 }

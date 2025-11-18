@@ -1486,6 +1486,10 @@ footer {
   border-left: 4px solid var(--info-blue);
 }
 
+.stat-card.genai {
+  border-left: 4px solid #667eea;
+}
+
 .stat-card.analytics {
   border-left: 4px solid var(--accenture-purple);
 }
@@ -1622,6 +1626,11 @@ footer {
 
 .tag-data {
   background: var(--success-green);
+  color: white;
+}
+
+.tag-genai {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
 }
 
@@ -1870,6 +1879,11 @@ footer {
 .category-header.ai {
   background: #EFF6FF;
   border-bottom-color: var(--info-blue);
+}
+
+.category-header.genai {
+  background: linear-gradient(135deg, #f3f4ff 0%, #faf5ff 100%);
+  border-bottom-color: #667eea;
 }
 
 .category-header.analytics {
@@ -2373,6 +2387,10 @@ footer {
 
 .mini-badge.ai {
   background: var(--info-blue);
+}
+
+.mini-badge.genai {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .mini-badge.analytics {
@@ -3082,6 +3100,10 @@ footer {
   border-left: 4px solid #1565C0;
 }
 
+.summary-stat.genai {
+  border-left: 4px solid #667eea;
+}
+
 .summary-stat.analytics {
   border-left: 4px solid #E65100;
 }
@@ -3166,6 +3188,12 @@ footer {
 .tag-ai {
   background: #E3F2FD;
   color: #1565C0;
+}
+
+.tag-genai {
+  background: linear-gradient(135deg, #e8eaff 0%, #f3e5ff 100%);
+  color: #5b21b6;
+  font-weight: 700;
 }
 
 .tag-analytics {

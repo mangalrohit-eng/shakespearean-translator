@@ -53,8 +53,17 @@ REQUIRED FIELDS (must find these):
 OPTIONAL FIELDS (nice to have, but not required):
 4. **Deal Description**: Detailed description of what the opportunity involves (may not exist)
 5. **Industry Name / Client Group**: Industry classification or group (may not exist)
+6. **Deal Size Category**: Categorical size like "Small", "Medium", "Large", "Extra Large" (may not exist)
+7. **Total Dollar Value**: The NUMERIC dollar amount/value of the deal (look for columns with large numbers, dollar amounts, revenue, TCV, ACV, deal value, total amount, etc.)
 
-Rules:
+Rules for identifying Total Dollar Value:
+- Look for columns with NUMERIC values (not text categories)
+- Common names: "Total", "TCV", "ACV", "Revenue", "Deal Value", "Amount", "Total Revenue", "Contract Value"
+- The sample data should show a NUMBER (e.g., 1500000, 250000, etc.), NOT a category like "Small" or "Large"
+- If multiple numeric columns exist, choose the one most likely to represent total deal value
+- This is CRITICAL: we need the actual dollar amount, not a size category
+
+Other Rules:
 - Look for exact matches first, then semantic matches
 - Column names might have variations (e.g., "Opp Name" vs "Opportunity Name")
 - Optional fields can be null if not found - that's perfectly fine
@@ -67,7 +76,9 @@ Respond ONLY with a valid JSON object in this exact format (no markdown, no expl
   "dealName": "exact column name or null",
   "dealDescription": "exact column name or null",
   "accountName": "exact column name or null",
-  "industryName": "exact column name or null"
+  "industryName": "exact column name or null",
+  "dealSize": "exact column name or null",
+  "totalValue": "exact column name or null"
 }`
 
     const llmResponse = await chat.invoke([new HumanMessage(prompt)])
@@ -94,7 +105,9 @@ Respond ONLY with a valid JSON object in this exact format (no markdown, no expl
         dealNameColumn: columnMapping.dealName || 'NOT FOUND',
         dealDescriptionColumn: columnMapping.dealDescription || 'NOT AVAILABLE (optional)',
         accountNameColumn: columnMapping.accountName || 'NOT FOUND',
-        industryNameColumn: columnMapping.industryName || 'NOT AVAILABLE (optional)'
+        industryNameColumn: columnMapping.industryName || 'NOT AVAILABLE (optional)',
+        dealSizeColumn: columnMapping.dealSize || 'NOT AVAILABLE (optional)',
+        totalValueColumn: columnMapping.totalValue || 'NOT AVAILABLE (optional)'
       }
     })
 
@@ -112,14 +125,46 @@ Respond ONLY with a valid JSON object in this exact format (no markdown, no expl
       })
     }
 
+    // Log if total value column was found
+    if (columnMapping.totalValue) {
+      onUpdate?.({
+        agent: 'ExcelParserAgent',
+        action: `✓ Total dollar value column identified: "${columnMapping.totalValue}"`,
+        status: 'active',
+        details: {
+          columnName: columnMapping.totalValue,
+          sampleValue: state.rawData[0][columnMapping.totalValue]
+        }
+      })
+    } else {
+      onUpdate?.({
+        agent: 'ExcelParserAgent',
+        action: 'ℹ️ Total dollar value column not found - deal sizes will not include $ amounts',
+        status: 'active'
+      })
+    }
+
     // Parse rows into structured Opportunity objects
     const opportunities: Opportunity[] = state.rawData.map((row, index) => {
+      // Extract and parse total value as number
+      let totalValue: number | undefined = undefined
+      if (columnMapping.totalValue && row[columnMapping.totalValue]) {
+        const rawValue = row[columnMapping.totalValue]
+        // Try to parse as number, handling various formats
+        const numValue = typeof rawValue === 'number' 
+          ? rawValue 
+          : parseFloat(String(rawValue).replace(/[^0-9.-]/g, ''))
+        totalValue = !isNaN(numValue) ? numValue : undefined
+      }
+
       const opp: Opportunity = {
         id: columnMapping.dealId ? String(row[columnMapping.dealId] || `AUTO_${index + 1}`) : `AUTO_${index + 1}`,
         opportunityName: columnMapping.dealName ? String(row[columnMapping.dealName] || '') : '',
         dealDescription: columnMapping.dealDescription ? String(row[columnMapping.dealDescription] || '') : '',
         accountName: columnMapping.accountName ? String(row[columnMapping.accountName] || 'Unknown Account') : 'Unknown Account',
         industryName: columnMapping.industryName ? String(row[columnMapping.industryName] || '') : '',
+        dealSize: columnMapping.dealSize ? String(row[columnMapping.dealSize] || '') : undefined,
+        total: totalValue,
         rawData: row
       }
       return opp

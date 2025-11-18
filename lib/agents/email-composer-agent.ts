@@ -20,7 +20,7 @@ export async function emailComposerAgent(
     }
   })
 
-  // Filter to only include opportunities with actual tags (AI, Analytics, or Data)
+  // Filter to only include opportunities with actual tags (AI, Gen AI, Analytics, or Data)
   // Exclude opportunities with no tags or only "None" tag
   const taggedOpportunities = state.analyzedOpportunities.filter(opp => 
     opp.tags && 
@@ -68,6 +68,7 @@ export async function emailComposerAgent(
   const generateEmailContent = async (account: string, opportunities: any[]) => {
     // Group by tags for better organization within each account's email
     const aiOpps = opportunities.filter(o => o.tags.includes('AI'))
+    const genAiOpps = opportunities.filter(o => o.tags.includes('Gen AI'))
     const analyticsOpps = opportunities.filter(o => o.tags.includes('Analytics'))
     const dataOpps = opportunities.filter(o => o.tags.includes('Data'))
 
@@ -81,6 +82,7 @@ Context:
 - Account: ${account}
 - Total Opportunities: ${opportunities.length}
 - AI-focused: ${aiOpps.length}
+- Gen AI-focused: ${genAiOpps.length}
 - Analytics-focused: ${analyticsOpps.length}
 - Data-focused: ${dataOpps.length}
 
@@ -90,12 +92,12 @@ ${opportunities.map(o => `• ID: ${o.id} | ${o.opportunityName} → ${o.tags.jo
 
 Write a SHORT, DIRECT, CASUAL email with this structure:
 
-Opening: "Found ${opportunities.length} opportunities that are likely Data & AI deals." (Note: Only includes opportunities that were identified as AI, Analytics, or Data - untagged opportunities are excluded.)
+Opening: "Found ${opportunities.length} opportunities that are likely Data & AI deals." (Note: Only includes opportunities that were identified as AI, Gen AI, Analytics, or Data - untagged opportunities are excluded.)
 
 List: Show each opportunity with:
 - **Opportunity ID** (important for MMS tagging)
 - **Opportunity name**
-- **Suggested tags** (${aiOpps.length > 0 ? 'AI' : ''}${analyticsOpps.length > 0 ? ', Analytics' : ''}${dataOpps.length > 0 ? ', Data' : ''})
+- **Suggested tags** (${aiOpps.length > 0 ? 'AI' : ''}${genAiOpps.length > 0 ? ', Gen AI' : ''}${analyticsOpps.length > 0 ? ', Analytics' : ''}${dataOpps.length > 0 ? ', Data' : ''})
 - **Brief reason** for why it was tagged (1-2 sentences from the rationale)
 
 Closing: "Can you please take a look and tag them appropriately in MMS? Let me know if you need help."
@@ -170,7 +172,7 @@ Write the email body (HTML format) without subject line:`
         <p>Can you please take a look and tag them appropriately in MMS? Let me know if you need help.</p>
         
         <p style="margin-top: 20px; color: rgba(255, 255, 255, 0.6); font-size: 0.85em;">
-          Summary: ${aiOpps.length} AI, ${analyticsOpps.length} Analytics, ${dataOpps.length} Data opportunities
+          Summary: ${aiOpps.length} AI, ${genAiOpps.length} Gen AI, ${analyticsOpps.length} Analytics, ${dataOpps.length} Data opportunities
         </p>
       `
     }
@@ -185,7 +187,7 @@ Write the email body (HTML format) without subject line:`
     const emailBody = await generateEmailContent(account, opportunities)
     
     // Get primary tag for this account's opportunities
-    const tagCounts = { AI: 0, Analytics: 0, Data: 0 }
+    const tagCounts = { AI: 0, 'Gen AI': 0, Analytics: 0, Data: 0 }
     opportunities.forEach(o => {
       o.tags.forEach((tag: string) => {
         if (tag in tagCounts) tagCounts[tag as keyof typeof tagCounts]++
